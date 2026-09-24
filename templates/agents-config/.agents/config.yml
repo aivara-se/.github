@@ -4,8 +4,9 @@
 # restate them. Changing a command means changing it here, in this repository's own copy:
 # that is the override mechanism, and it is why no repository needs to fork the template.
 #
-# Fill every {{...}} slot once, at adoption (README.md, step 3). After that this file
-# holds real values and nothing else: `grep -rn '{{'` must print nothing.
+# Fill every slot once, at adoption (README.md, step 3). After that this file holds real
+# values and nothing else: a search of the copied tree for two opening braces must print
+# nothing.
 convention_version: "{{CONVENTION_VERSION}}"      # integer revision of the convention this copy came from
 adopted_from: "{{ADOPTED_FROM}}"                  # commit in {{ORG}}/.github this copy came from
 repo: "{{ORG}}/{{REPO_NAME}}"
