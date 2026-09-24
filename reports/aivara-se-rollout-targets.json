@@ -1,0 +1,235 @@
+{
+  "generatedAt": "2026-09-24T12:18:13Z",
+  "org": "aivara-se",
+  "generatedBy": "MiMi <mimi@aivara.se> (kanban task t_29484e8b)",
+  "homeRepo": "aivara-se/.github",
+  "method": "gh repo list aivara-se --limit 1000 --json name,description,isArchived,primaryLanguage,defaultBranchRef,updatedAt ; gh api repos/aivara-se/<repo> (permissions.push, pushed_at) ; gh api repos/aivara-se/<repo>/git/trees/<default-branch>?recursive=1 (file presence; truncated=false for all seven)",
+  "counts": {
+    "totalReposScanned": 7,
+    "inScope": 7,
+    "alreadyConfigured": 5,
+    "needsAgentsFile": 2,
+    "needsAgentsDir": 7,
+    "excluded": 0
+  },
+  "conventionsObserved": {
+    "agentsFile": "5 of 7 repos carry an AGENTS.md and all five differ (distinct blob SHAs: bot-mama 7758ea27e3d305e47b2c416adbb9697cda61b9e9, bot-meme 66a479624a83550d73d724011525a66db3bdf179, bot-mimi cdf6ee29d25447643dcc40410024d167990f9014, bot-momo 085c1e1914029e7b56852870d676c367c0d46b48, bot-website 45f35fbf159fb8ecda8c7ce8da010f875bdc459a) \u2014 every one is repo-specific prose and must be merged into, not replaced.",
+    "claudeFile": "No repo has CLAUDE.md.",
+    "agentsDir": "No repo has .agents/ \u2014 the skills convention is new everywhere in this org.",
+    "sharedSiteTooling": "The four bot-* sites plus bot-website share byte-identical docs/DESIGN.md, docs/PRODUCT.md, docs/SYSTEM.md, assets/fonts/ and scripts/verify-site.sh (blob 8430480e08fe29d2e1b2a9aa8f4477b3a674e82f); only AGENTS.md, README.md, assets/avatar.webp, index.html and log.html differ.",
+    "runtimes": "JS work is Bun-first (aivara.se pins bun@1.4.2 via packageManager and .npmrc engine-strict=true). The five site repos have no JS runtime at all.",
+    "defaultBranches": "All seven repos use main as the default branch, and none is protected."
+  },
+  "targets": [
+    {
+      "name": ".github",
+      "url": "https://github.com/aivara-se/.github",
+      "defaultBranch": "main",
+      "language": "none",
+      "hasAgentsFile": false,
+      "hasClaudeFile": false,
+      "hasAgentsDir": false,
+      "buildTooling": {
+        "files": [
+          "README.md"
+        ],
+        "packageManager": null,
+        "test": null,
+        "check": null,
+        "build": null,
+        "ci": null,
+        "note": "Organisation profile / community-health repo. Markdown only, no build or test tooling."
+      },
+      "inScope": true,
+      "excludedReason": null,
+      "hasPushAccess": true,
+      "isArchived": false,
+      "isPrivate": false,
+      "sizeKb": 0,
+      "lastPushedAt": "2026-09-17T19:27:32Z",
+      "domain": null,
+      "notes": "Org profile repo (README.md only). Proposed home for the org-wide `reports/` and `templates/agents-config/` artefacts of this programme, since it is org-scoped and has no product code."
+    },
+    {
+      "name": "aivara.se",
+      "url": "https://github.com/aivara-se/aivara.se",
+      "defaultBranch": "main",
+      "language": "Svelte",
+      "hasAgentsFile": false,
+      "hasClaudeFile": false,
+      "hasAgentsDir": false,
+      "buildTooling": {
+        "files": [
+          "package.json",
+          "bun.lock",
+          ".npmrc",
+          "tsconfig.json",
+          "vite.config.ts",
+          ".prettierrc",
+          ".prettierignore",
+          ".github/workflows/checks.yml"
+        ],
+        "packageManager": "bun@1.4.2",
+        "test": "bun test",
+        "check": "bun run check",
+        "build": "bun run build",
+        "ci": ".github/workflows/checks.yml",
+        "note": "SvelteKit + Vite on Cloudflare Pages (adapter-cloudflare). Tests via `bun test` (src/lib/data/projects.test.ts); formatting gate `bun run format:check` (prettier). CI runs install + check + format:check + build but NOT `bun test`."
+      },
+      "inScope": true,
+      "excludedReason": null,
+      "hasPushAccess": true,
+      "isArchived": false,
+      "isPrivate": false,
+      "sizeKb": 509,
+      "lastPushedAt": "2026-09-23T19:52:03Z",
+      "domain": "aivara.se",
+      "notes": "The lab's public site. No agent configuration at all. Root docs are DESIGN.md + PRODUCT.md (no docs/ subdir, unlike the bot sites)."
+    },
+    {
+      "name": "bot-mama",
+      "url": "https://github.com/aivara-se/bot-mama",
+      "defaultBranch": "main",
+      "language": "HTML",
+      "hasAgentsFile": true,
+      "hasClaudeFile": false,
+      "hasAgentsDir": false,
+      "buildTooling": {
+        "files": [
+          "scripts/verify-site.sh"
+        ],
+        "packageManager": null,
+        "test": "./scripts/verify-site.sh",
+        "check": "./scripts/verify-site.sh",
+        "build": null,
+        "ci": null,
+        "note": "Static HTML with inline CSS: no build step, no dependencies, no JavaScript. scripts/verify-site.sh is the only automated check (bash + embedded python3, exit non-zero on failure). Deployment is GitHub Pages from main."
+      },
+      "inScope": true,
+      "excludedReason": null,
+      "hasPushAccess": true,
+      "isArchived": false,
+      "isPrivate": false,
+      "sizeKb": 124,
+      "lastPushedAt": "2026-09-23T22:34:01Z",
+      "domain": "mama.aivara.se",
+      "notes": "Live bot site at https://mama.aivara.se. Has its own repo-specific AGENTS.md (House rules / Adding a log entry / Verify before pushing / Deploy). Merge, do not overwrite."
+    },
+    {
+      "name": "bot-meme",
+      "url": "https://github.com/aivara-se/bot-meme",
+      "defaultBranch": "main",
+      "language": "HTML",
+      "hasAgentsFile": true,
+      "hasClaudeFile": false,
+      "hasAgentsDir": false,
+      "buildTooling": {
+        "files": [
+          "scripts/verify-site.sh"
+        ],
+        "packageManager": null,
+        "test": "./scripts/verify-site.sh",
+        "check": "./scripts/verify-site.sh",
+        "build": null,
+        "ci": null,
+        "note": "Static HTML with inline CSS: no build step, no dependencies, no JavaScript. scripts/verify-site.sh is the only automated check (bash + embedded python3, exit non-zero on failure). Deployment is GitHub Pages from main."
+      },
+      "inScope": true,
+      "excludedReason": null,
+      "hasPushAccess": true,
+      "isArchived": false,
+      "isPrivate": false,
+      "sizeKb": 128,
+      "lastPushedAt": "2026-09-23T22:33:04Z",
+      "domain": "meme.aivara.se",
+      "notes": "Live bot site at https://meme.aivara.se. Repo-specific AGENTS.md (ship blob 66a479624a83550d73d724011525a66db3bdf179) \u2014 merge, do not overwrite."
+    },
+    {
+      "name": "bot-mimi",
+      "url": "https://github.com/aivara-se/bot-mimi",
+      "defaultBranch": "main",
+      "language": "HTML",
+      "hasAgentsFile": true,
+      "hasClaudeFile": false,
+      "hasAgentsDir": false,
+      "buildTooling": {
+        "files": [
+          "scripts/verify-site.sh"
+        ],
+        "packageManager": null,
+        "test": "./scripts/verify-site.sh",
+        "check": "./scripts/verify-site.sh",
+        "build": null,
+        "ci": null,
+        "note": "Static HTML with inline CSS: no build step, no dependencies, no JavaScript. scripts/verify-site.sh is the only automated check (bash + embedded python3, exit non-zero on failure). Deployment is GitHub Pages from main."
+      },
+      "inScope": true,
+      "excludedReason": null,
+      "hasPushAccess": true,
+      "isArchived": false,
+      "isPrivate": false,
+      "sizeKb": 125,
+      "lastPushedAt": "2026-09-23T22:26:15Z",
+      "domain": "mimi.aivara.se",
+      "notes": "Live bot site at https://mimi.aivara.se. Repo-specific AGENTS.md (ship blob cdf6ee29d25447643dcc40410024d167990f9014) \u2014 merge, do not overwrite."
+    },
+    {
+      "name": "bot-momo",
+      "url": "https://github.com/aivara-se/bot-momo",
+      "defaultBranch": "main",
+      "language": "HTML",
+      "hasAgentsFile": true,
+      "hasClaudeFile": false,
+      "hasAgentsDir": false,
+      "buildTooling": {
+        "files": [
+          "scripts/verify-site.sh"
+        ],
+        "packageManager": null,
+        "test": "./scripts/verify-site.sh",
+        "check": "./scripts/verify-site.sh",
+        "build": null,
+        "ci": null,
+        "note": "Static HTML with inline CSS: no build step, no dependencies, no JavaScript. scripts/verify-site.sh is the only automated check (bash + embedded python3, exit non-zero on failure). Deployment is GitHub Pages from main."
+      },
+      "inScope": true,
+      "excludedReason": null,
+      "hasPushAccess": true,
+      "isArchived": false,
+      "isPrivate": false,
+      "sizeKb": 127,
+      "lastPushedAt": "2026-09-23T22:23:28Z",
+      "domain": "momo.aivara.se",
+      "notes": "Live bot site at https://momo.aivara.se. Repo-specific AGENTS.md (ship blob 085c1e1914029e7b56852870d676c367c0d46b48) \u2014 merge, do not overwrite."
+    },
+    {
+      "name": "bot-website",
+      "url": "https://github.com/aivara-se/bot-website",
+      "defaultBranch": "main",
+      "language": "HTML",
+      "hasAgentsFile": true,
+      "hasClaudeFile": false,
+      "hasAgentsDir": false,
+      "buildTooling": {
+        "files": [
+          "scripts/verify-site.sh"
+        ],
+        "packageManager": null,
+        "test": "./scripts/verify-site.sh",
+        "check": "./scripts/verify-site.sh",
+        "build": null,
+        "ci": null,
+        "note": "Static HTML with inline CSS: no build step, no dependencies, no JavaScript. scripts/verify-site.sh is the only automated check (bash + embedded python3, exit non-zero on failure). Deployment is GitHub Pages from main."
+      },
+      "inScope": true,
+      "excludedReason": null,
+      "hasPushAccess": true,
+      "isArchived": false,
+      "isPrivate": false,
+      "sizeKb": 113,
+      "lastPushedAt": "2026-09-23T19:21:23Z",
+      "domain": null,
+      "notes": "The upstream template for the four bot sites (`gh api -X POST repos/aivara-se/bot-website/generate`). Its AGENTS.md is template-facing ('AGENTS.md \u2014 using this template': 7 numbered steps + Always/never) and is the closest existing analogue to the generalised AGENTS.md \u2014 review before replacing. No CNAME/domain of its own."
+    }
+  ]
+}
