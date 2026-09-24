@@ -19,6 +19,7 @@ was touched, nothing was force-pushed, and no repository-specific instruction wa
 | 5 | `aivara-se/bot-mimi` | `chore/adopt-agents-config` | `0e20380` | — | skipped, same cause |
 | 6 | `aivara-se/bot-momo` | `chore/adopt-agents-config` | `67c4918` | — | skipped, same cause |
 | 7 | `aivara-se/bot-website` | `chore/adopt-agents-config` | `5f12769` | — | skipped, same cause |
+| — | this log | `docs/rollout-log` | `32eecbe` | https://github.com/aivara-se/.github/pull/5 | **open** |
 
 Every repository in the target list is accounted for: 2 open pull requests and 5 explained skips. The five
 skipped branches are pushed and verified; only the pull-request object is missing.
