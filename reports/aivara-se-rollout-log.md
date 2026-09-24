@@ -128,6 +128,10 @@ ok    5 skill(s) indexed and valid; paths resolve; config complete. <repository 
 `aivara.se` was installed with `bun install --frozen-lockfile` (bun 1.4.2) before its gates were run. The
 four site checks were also run against `main` first, to establish the baseline they are compared with.
 
+The repository's own CI agrees: on PR aivara-se/aivara.se#8 the `checks` workflow
+(install → check → format:check → build) ran green in 27s, and the Cloudflare Pages preview deployment for
+the branch succeeded.
+
 ## Nothing was deleted
 
 For each of the five repositories that already had an `AGENTS.md`, every non-blank line of the previous file
