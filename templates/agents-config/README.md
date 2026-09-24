@@ -26,6 +26,8 @@ templates/agents-config/
 
 `README.md` and `TEMPLATE.md` stay in this directory: they are about the convention, not about the adopting repository. The rest is copied.
 
+The copied files are formatted the way `prettier` formats them with its default configuration, so a repository whose gate checks the whole tree does not inherit a red check from files it must not reformat. Formatting changes belong here, in the template, not in a per-repository copy.
+
 ## Adopt it — a dummy repository walkthrough
 
 The steps below are literal. In them, the adopting repository is `/tmp/dummy-repo`; substitute your own path. Nothing here needs network access beyond the clone you already have.
@@ -53,33 +55,33 @@ If the repository already has an `AGENTS.md` (five of the seven `aivara-se` repo
 
 Every slot uses the same syntax: `{{UPPER_SNAKE_CASE}}`. There is no other templating syntax anywhere in the copied tree, so `grep -rn '{{' <repo>` after step 3 must print nothing.
 
-| Placeholder | Required | Meaning | Example |
-|---|---|---|---|
-| `{{ORG}}` | yes | the GitHub organisation that owns the repo and the convention | `aivara-se` |
-| `{{REPO_NAME}}` | yes | the repository name, without the owner | `bot-mama` |
-| `{{CONVENTION_VERSION}}` | yes | the integer revision of this template you are adopting | `1` |
-| `{{ADOPTED_FROM}}` | yes | commit in `aivara-se/.github` this copy came from (`git -C <clone> rev-parse HEAD`) | `9c5f6ed` |
-| `{{REPO_PURPOSE}}` | yes | one sentence: what this repository is and who it is for | `Static site for the MaMa agent, published at https://mama.aivara.se.` |
-| `{{CURRENT_FOCUS}}` | yes | the work wanted right now, and what not to touch | `Polish the log page. Do not restructure the CSS.` |
-| `{{DEFAULT_BRANCH}}` | yes | the branch work lands on | `main` |
-| `{{REVIEW_REQUEST_TARGETS}}` | yes | who a pull request asks for review | ``the operator (`thani-sh`) and one peer agent`` |
-| `{{REPO_STRUCTURE}}` | yes | the repo map: one line per path that matters, as a multi-line string | see step 3 |
-| `{{REPO_LANGUAGE}}` | yes | the primary language, or `none` | `HTML` |
-| `{{REPO_PACKAGE_MANAGER}}` | yes | `bun`, `npm`, `cargo`, or `none` | `none` |
-| `{{REPO_CHECK_COMMAND}}` | yes | **the single wrapper command** humans, agents and CI all run; `null` if the repo has no gate | `./scripts/verify-site.sh` |
-| `{{REPO_TEST_COMMAND}}` | no | the test command, or `null` | `./scripts/verify-site.sh` |
-| `{{REPO_LINT_COMMAND}}` | no | the lint/format command, or `null` | `bun run format:check` |
-| `{{REPO_BUILD_COMMAND}}` | no | the build command, or `null` | `bun run build` |
-| `{{REPO_CI_WORKFLOW}}` | no | path to the CI workflow, or `null` | `.github/workflows/checks.yml` |
-| `{{ARCH_DOC_PATH}}` | yes | the document that is authoritative for architecture, or `none` | `docs/SYSTEM.md` |
-| `{{PRODUCT_DOC_PATH}}` | yes | the document that is authoritative for the product, or `none` | `docs/PRODUCT.md` |
-| `{{DESIGN_DOC_PATH}}` | yes | the document that is authoritative for UI/UX, or `none` | `docs/DESIGN.md` |
+| Placeholder                  | Required | Meaning                                                                                      | Example                                                                |
+| ---------------------------- | -------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `{{ORG}}`                    | yes      | the GitHub organisation that owns the repo and the convention                                | `aivara-se`                                                            |
+| `{{REPO_NAME}}`              | yes      | the repository name, without the owner                                                       | `bot-mama`                                                             |
+| `{{CONVENTION_VERSION}}`     | yes      | the integer revision of this template you are adopting                                       | `1`                                                                    |
+| `{{ADOPTED_FROM}}`           | yes      | commit in `aivara-se/.github` this copy came from (`git -C <clone> rev-parse HEAD`)          | `9c5f6ed`                                                              |
+| `{{REPO_PURPOSE}}`           | yes      | one sentence: what this repository is and who it is for                                      | `Static site for the MaMa agent, published at https://mama.aivara.se.` |
+| `{{CURRENT_FOCUS}}`          | yes      | the work wanted right now, and what not to touch                                             | `Polish the log page. Do not restructure the CSS.`                     |
+| `{{DEFAULT_BRANCH}}`         | yes      | the branch work lands on                                                                     | `main`                                                                 |
+| `{{REVIEW_REQUEST_TARGETS}}` | yes      | who a pull request asks for review                                                           | ``the operator (`thani-sh`) and one peer agent``                       |
+| `{{REPO_STRUCTURE}}`         | yes      | the repo map: one line per path that matters, as a multi-line string                         | see step 3                                                             |
+| `{{REPO_LANGUAGE}}`          | yes      | the primary language, or `none`                                                              | `HTML`                                                                 |
+| `{{REPO_PACKAGE_MANAGER}}`   | yes      | `bun`, `npm`, `cargo`, or `none`                                                             | `none`                                                                 |
+| `{{REPO_CHECK_COMMAND}}`     | yes      | **the single wrapper command** humans, agents and CI all run; `null` if the repo has no gate | `./scripts/verify-site.sh`                                             |
+| `{{REPO_TEST_COMMAND}}`      | no       | the test command, or `null`                                                                  | `./scripts/verify-site.sh`                                             |
+| `{{REPO_LINT_COMMAND}}`      | no       | the lint/format command, or `null`                                                           | `bun run format:check`                                                 |
+| `{{REPO_BUILD_COMMAND}}`     | no       | the build command, or `null`                                                                 | `bun run build`                                                        |
+| `{{REPO_CI_WORKFLOW}}`       | no       | path to the CI workflow, or `null`                                                           | `.github/workflows/checks.yml`                                         |
+| `{{ARCH_DOC_PATH}}`          | yes      | the document that is authoritative for architecture, or `none`                               | `docs/SYSTEM.md`                                                       |
+| `{{PRODUCT_DOC_PATH}}`       | yes      | the document that is authoritative for the product, or `none`                                | `docs/PRODUCT.md`                                                      |
+| `{{DESIGN_DOC_PATH}}`        | yes      | the document that is authoritative for UI/UX, or `none`                                      | `docs/DESIGN.md`                                                       |
 
-Command values are single-line strings, and a command this repo does not have is the literal `null` — not an empty string, not a guess.
+Command values are single-line strings written into `config.yml` as quoted YAML scalars, and a command this repo does not have is the bare `null` — never the string `"null"`, never an empty string, never a guess. Step 3 writes both forms; a copy filled in by hand must use the bare one.
 
 ### Step 3 — substitute them
 
-Edit the `VALUES` dictionary below and run the script from the adopting repository's root. It writes each value into `AGENTS.md`, `.agents/config.yml` and the skills, then fails loudly if a placeholder in the tree has no value or if any placeholder survives.
+Edit the `VALUES` dictionary below and run the script from the adopting repository's root. It writes each value into `AGENTS.md`, `.agents/config.yml` and the skills, then fails loudly if a placeholder in the tree has no value or if any placeholder survives. A command slot whose value is the literal `null` is written into `config.yml` as the bare `null`, so a gate this repository does not have reads as `None` to a YAML parser and not as the string `"null"`.
 
 ```sh
 cd /tmp/dummy-repo
@@ -123,6 +125,11 @@ for path in targets:
             return m.group(0)
         return VALUES[key]
     path.write_text(PATTERN.sub(repl, text))
+# An absent gate is the bare YAML null, never the string "null" (step 2). The template quotes
+# its command slots so that an unfilled checkout is valid YAML; this is where that quoting
+# comes off, so the filled-in file reads as null to a YAML parser rather than as a command.
+config = Path(".agents/config.yml")
+config.write_text(re.sub(r'(?m)^(\s*[\w]+:\s*)"null"(?=\s|$)', r"\1null", config.read_text()))
 if unmapped:
     raise SystemExit("no value supplied for: " + ", ".join(sorted(unmapped)))
 left = [str(p) for p in targets if "{{" in p.read_text()]
@@ -138,7 +145,7 @@ PY
 python3 .agents/scripts/validate_agents_config.py
 ```
 
-It must exit 0. If it does not, it names the file and the problem, and the fix is whatever it names: a skill that exists but is missing from the index in `AGENTS.md`, a skill whose front matter lacks `when-to-use`, a path referenced but absent, or a placeholder left behind. The checker is part of the copied tree on purpose — run it whenever `AGENTS.md`, a skill or `.agents/config.yml` changes.
+It must exit 0. If it does not, it names the file and the problem, and the fix is whatever it names: a skill that exists but is missing from the index in `AGENTS.md`, a skill whose front matter lacks `when-to-use`, a path referenced but absent, a placeholder left behind, or a command slot written as the string `"null"` instead of the bare `null`. The checker is part of the copied tree on purpose — run it whenever `AGENTS.md`, a skill or `.agents/config.yml` changes.
 
 ### Step 5 — land it
 
@@ -159,10 +166,11 @@ Then request review from the targets named in `{{REVIEW_REQUEST_TARGETS}}`. Neve
 Commands, paths and the repo's identity are declared **once**, in `.agents/config.yml`, and nowhere else:
 
 ```yaml
-convention_version: 1
-repo: aivara-se/dummy-repo
-language: HTML
-package_manager: none
+convention_version: "1"
+adopted_from: "<the commit in aivara-se/.github this copy came from>"
+repo: "aivara-se/dummy-repo"
+language: "HTML"
+package_manager: "none"
 commands:
   check: "./scripts/verify-site.sh"
   test: null
@@ -175,12 +183,14 @@ paths:
   design: "docs/DESIGN.md"
 ```
 
+That is the shape step 3 produces for the walkthrough above: the identity and path slots are quoted YAML strings, a command is a quoted YAML string, and a gate the repository does not have is the bare `null`.
+
 `AGENTS.md` and every skill reference those values by key and never restate them. That is the whole override story, and it is deliberate: a repository changes its test command by editing its own `.agents/config.yml`, which is a per-repo file — nobody forks the template, and no shared file needs a per-repo branch. It also removes the drift the analysis found in provar, where the same commands appeared in `AGENTS.md`, in a skill, in `package.json` and in CI, and two of the four contradicted each other.
 
 Two rules make it hold:
 
 - **`commands.check` is the wrapper.** One command that runs everything the repo gates on — format, lint, test, build — so a human, an agent and CI cannot diverge. A repository whose CI runs a different sequence than `check` has a bug in the CI.
-- **`null` means "this repo has no such gate"**, and every reader must treat it that way. An agent that invents a command to fill a `null` has broken the convention.
+- **`null` means "this repo has no such gate"**, and every reader must treat it that way. It is the bare YAML `null` — never the string `"null"`, which is a command name, and never an empty string. An agent that invents a command to fill a `null` has broken the convention.
 
 ## Adding or changing a skill
 
@@ -200,20 +210,20 @@ The convention is versioned by an integer, recorded in `.agents/config.yml` as `
 
 Kept, generalised:
 
-| Kept | Why |
-|---|---|
-| A root `AGENTS.md` as the single entry point, tool-neutral, no vendor manifest | It is what an agent reads first, and it costs nothing to keep true |
+| Kept                                                                                                                      | Why                                                                                                                                                                                                                                                                                               |
+| ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A root `AGENTS.md` as the single entry point, tool-neutral, no vendor manifest                                            | It is what an agent reads first, and it costs nothing to keep true                                                                                                                                                                                                                                |
 | The section order — status → focus → roles → how work moves → clarifying → tooling → version control → structure → skills | The ordering rationale survives the language change: temporary steering before standing rules, "ask first" before commands, the skill index last. Roles and how work moves are the two added sections, placed directly after the focus because who does the work is read before any rule about it |
-| `## Current Project Focus` | Turns steering that would otherwise be repeated in chat into a reviewable statement |
-| Per-language command bullets, `ALWAYS`/`Never` instead of "consider"/"prefer" | Rules that admit no judgement are marked as such |
-| Conventional Commits, lowercase hyphenated branches, no merge commits | Org-wide policy, not repo-specific |
-| A repo map with an explicit "where does new markdown go" rule | It is the cheapest guard against documentation sprawl — provided the map is true |
-| `.agents/skills/<name>/SKILL.md` with minimal YAML front matter | No registry, no tooling, discoverable by reading one file |
-| Splitting skills by concern (coding / testing / writing), not by language | The concerns are stable across a polyglot org; the languages are not |
-| `resources/` next to a `SKILL.md` for supporting files | Simple, and it needs no index |
-| The fixed five-section review output schema | The most transferable idea in provar: it makes two reviewers' reports comparable |
-| A "Pre-Completion Verification" section inside a skill | "What to run before you say done" belongs where the work happens |
-| One wrapper command that humans, agents and CI all run | Removes command drift between config, docs and CI |
+| `## Current Project Focus`                                                                                                | Turns steering that would otherwise be repeated in chat into a reviewable statement                                                                                                                                                                                                               |
+| Per-language command bullets, `ALWAYS`/`Never` instead of "consider"/"prefer"                                             | Rules that admit no judgement are marked as such                                                                                                                                                                                                                                                  |
+| Conventional Commits, lowercase hyphenated branches, no merge commits                                                     | Org-wide policy, not repo-specific                                                                                                                                                                                                                                                                |
+| A repo map with an explicit "where does new markdown go" rule                                                             | It is the cheapest guard against documentation sprawl — provided the map is true                                                                                                                                                                                                                  |
+| `.agents/skills/<name>/SKILL.md` with minimal YAML front matter                                                           | No registry, no tooling, discoverable by reading one file                                                                                                                                                                                                                                         |
+| Splitting skills by concern (coding / testing / writing), not by language                                                 | The concerns are stable across a polyglot org; the languages are not                                                                                                                                                                                                                              |
+| `resources/` next to a `SKILL.md` for supporting files                                                                    | Simple, and it needs no index                                                                                                                                                                                                                                                                     |
+| The fixed five-section review output schema                                                                               | The most transferable idea in provar: it makes two reviewers' reports comparable                                                                                                                                                                                                                  |
+| A "Pre-Completion Verification" section inside a skill                                                                    | "What to run before you say done" belongs where the work happens                                                                                                                                                                                                                                  |
+| One wrapper command that humans, agents and CI all run                                                                    | Removes command drift between config, docs and CI                                                                                                                                                                                                                                                 |
 
 Added, because provar has none of it: agent roles; the task/handoff/review protocol; `when-to-use`; a skill index that a checker keeps true; the per-repo override file; convention versioning; a review verdict vocabulary; and an explicit statement of what an agent may do unasked (branch, push, PR, run the repo's commands — nothing else).
 

@@ -19,6 +19,9 @@ Checks:
     5. No unresolved slot remains in AGENTS.md or under .agents/ (the scripts directory is
        exempt: looking for slots is its job), unless --template is given.
     6. .agents/config.yml declares the keys the convention reads.
+    7. No command slot in .agents/config.yml is the quoted string "null". A gate this
+       repository does not have is the bare null, which every reader treats as "no such
+       gate"; the string is a command somebody would run.
 
 Exit status is 0 when every check passes, 1 otherwise. This file is part of the copied tree
 on purpose: run it whenever AGENTS.md, a skill, or .agents/config.yml changes.
@@ -55,6 +58,11 @@ CONFIG_KEYS = (
 SCAN_SKIP = ("/scripts/",)
 TRAILING = ".,;:)]}"
 MAX_SKILL_LINES = 120
+# A quoted "null" is the string that a naive reading of the template's quoted slots produces;
+# the convention's spelling for an absent gate is the bare null.
+QUOTED_NULL = re.compile(
+    r"(?m)^\s*(?:check|test|lint|build|ci_workflow):\s*[\"']null[\"']\s*(?:#.*)?$"
+)
 
 
 class Report:
@@ -195,6 +203,11 @@ def main(argv: list[str]) -> int:
                 report.error(f".agents/config.yml: no '{key}:' key")
         if not template and SLOT.search(text):
             report.error(".agents/config.yml: unresolved slots remain")
+        if QUOTED_NULL.search(text):
+            report.error(
+                ".agents/config.yml: a command slot is the string \"null\"; an absent gate "
+                "is the bare null (README.md, step 2)"
+            )
 
     for message in report.notes:
         print(f"note  {message}")

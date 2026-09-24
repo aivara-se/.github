@@ -15,7 +15,7 @@ Rules for a skill under this convention:
 
 ```markdown
 ---
-name: {{SKILL_NAME}}
+name: <the skill's directory name>
 description: <what this skill covers, one sentence.>
 when-to-use: <the situation in which a reader must open this file.>
 ---
@@ -37,4 +37,4 @@ when-to-use: <the situation in which a reader must open this file.>
 <What to run, and what must be true, before a reader of this skill claims the work is done.>
 ```
 
-Write the body in the same register as the rest of the convention: imperative, second person, no hedging, no filler, and every rule marked `ALWAYS` or `Never` when it admits no judgement.
+Write the body in the same register as the rest of the convention: imperative, second person, no hedging, no filler, and every rule marked `ALWAYS` or `Never` when it admits no judgement. Every `<...>` in the block is a fill-in: this scaffold stays here and is not part of the substitution in `README.md`, step 3, so nothing replaces it for you.
