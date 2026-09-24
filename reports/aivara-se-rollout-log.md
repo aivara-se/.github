@@ -132,6 +132,13 @@ The repository's own CI agrees: on PR aivara-se/aivara.se#8 the `checks` workflo
 (install → check → format:check → build) ran green in 27s, and the Cloudflare Pages preview deployment for
 the branch succeeded.
 
+Scope note on the "no placeholders left" check: it is run over the committed agent configuration
+(`AGENTS.md` and `.agents/`) and is clean in all seven repositories. A repository-wide `git grep '{{'` also
+matches files this rollout does not touch and did not create — `bot-website`'s `index.html` and `log.html`
+(the template's unfilled site placeholders, which are deliberate), `docs/SYSTEM.md`,
+`scripts/verify-site.sh` (which prints the token with braces in its own failure message), and a few binary
+assets under `aivara.se/static/`. Those pre-date this change and are out of its scope.
+
 ## Nothing was deleted
 
 For each of the five repositories that already had an `AGENTS.md`, every non-blank line of the previous file
