@@ -1,6 +1,6 @@
 # Skill scaffold
 
-This file is the scaffold for a new skill in the `aivara-se` agent convention. It stays here in the template repository — do not copy it into an adopting repository. Copy the block below into `.agents/skills/<skill-name>/SKILL.md` there, and add the skill's row to the index table in that repository's `AGENTS.md` in the same pull request.
+This file is the scaffold for a new skill in the `aivara-se` agent convention. It stays here in the template repository — do not copy it into an adopting repository. Copy the block below into `.agents/skills/<skill-name>/SKILL.md` there, and add the skill to the skill index in that repository's `AGENTS.md` in the same pull request.
 
 Rules for a skill under this convention:
 

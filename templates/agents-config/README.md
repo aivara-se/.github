@@ -185,7 +185,7 @@ Two rules make it hold:
 ## Adding or changing a skill
 
 1. Copy the block in `TEMPLATE.md` to `.agents/skills/<skill-name>/SKILL.md`.
-2. Add its row to the skill index in `AGENTS.md` **in the same pull request**.
+2. Add it to the skill index in `AGENTS.md` **in the same pull request**.
 3. Run `python3 .agents/scripts/validate_agents_config.py`. It fails if the index and the directory disagree, if a front-matter key is missing, or if the skill references a file that does not exist.
 
 Front matter is exactly three keys: `name` (must equal the directory name), `description` (one sentence on what it covers) and `when-to-use` (the trigger, in the reader's words). The `when-to-use` key **is an addition to provar's convention**, which used `name` and `description` only — the analysis asked for a third key precisely because a skill that is not obviously triggered does not get read. Everything else about front matter stays minimal on purpose: no versions, no tool lists, no paths, because nothing consumes them.
@@ -203,7 +203,7 @@ Kept, generalised:
 | Kept | Why |
 |---|---|
 | A root `AGENTS.md` as the single entry point, tool-neutral, no vendor manifest | It is what an agent reads first, and it costs nothing to keep true |
-| The section order — status → focus → clarifying → tooling → version control → structure → skills | The ordering rationale survives the language change: temporary steering before standing rules, "ask first" before commands, the skill index last |
+| The section order — status → focus → roles → how work moves → clarifying → tooling → version control → structure → skills | The ordering rationale survives the language change: temporary steering before standing rules, "ask first" before commands, the skill index last. Roles and how work moves are the two added sections, placed directly after the focus because who does the work is read before any rule about it |
 | `## Current Project Focus` | Turns steering that would otherwise be repeated in chat into a reviewable statement |
 | Per-language command bullets, `ALWAYS`/`Never` instead of "consider"/"prefer" | Rules that admit no judgement are marked as such |
 | Conventional Commits, lowercase hyphenated branches, no merge commits | Org-wide policy, not repo-specific |
