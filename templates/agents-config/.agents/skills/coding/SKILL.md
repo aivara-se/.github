@@ -1,12 +1,12 @@
 ---
 name: coding
-description: Code quality rules a formatter cannot enforce — structure, dependencies, error handling, public surface, and the checks to run before calling a change done.
-when-to-use: Any change to source code, or to the build and CI definitions around it. Read it before writing the first line, not after the review.
+description: Code quality rules a formatter cannot enforce — structure, dependencies, scripts, error handling, public surface, and the checks to run before calling a change done.
+when-to-use: Any change to source code, or to the build and CI definitions around it. Read it before writing the first line, not after.
 ---
 
 # Coding
 
-Style is the language's own business: run the formatter and linter this repository declares in `.agents/config.yml` and do not argue with them. This skill covers what they cannot decide.
+Style is the language's own business: run the formatter and linter this repository already uses and do not argue with them. This skill covers what they cannot decide.
 
 ## Structure and size
 
@@ -18,8 +18,14 @@ Style is the language's own business: run the formatter and linter this reposito
 ## Dependencies
 
 - The standard library or the runtime first. Every new dependency is a maintenance and supply-chain cost: justify it in the pull request body or do not add it.
-- **Never** add a second package manager, a second lockfile, a second formatter, or a second test runner. Use the ones declared in `.agents/config.yml`.
+- **Never** add a second package manager, a second lockfile, a second formatter, or a second test runner. The toolchain is the one the repository already uses.
 - Dependencies are added for a reason that is written down, and pinned by the lockfile that the repository already commits.
+
+## Scripts
+
+- **A development-flow script is a Bun script.** Something that runs commands — a check, a build, a release, a data fix — is written in TypeScript and run with `bun run scripts/<name>.ts`, in the repository's own `scripts/` directory. **Never** Python. Prefer it over a bash shell script: past a handful of lines a shell script has no types, no argument handling and no error handling, and it fails differently on the next machine. A command typed at the prompt is not a script.
+- A script is code and gets the same treatment as the rest of the change: fail loudly when it cannot do its job, no silent fallback, no secret printed, and any argument it needs named where the command is written down.
+- **Never** leave a script that only one run needed. If it was a one-off, it was a command.
 
 ## Errors and data
 
@@ -38,6 +44,6 @@ Style is the language's own business: run the formatter and linter this reposito
 
 Before you call a change done:
 
-1. Run the formatter and linter from `.agents/config.yml` — clean, with no suppressions you added for this change.
-2. Run `commands.check` on the final tree — exit 0.
+1. Run the formatter and linter this repository already uses — clean, with no suppressions you added for this change.
+2. Run the check command written down in `AGENTS.md` on the final tree — exit 0.
 3. Read the diff once, top to bottom, as the reviewer will: no debug output, no stray files, no unrelated reformatting, no scope the task did not ask for.
