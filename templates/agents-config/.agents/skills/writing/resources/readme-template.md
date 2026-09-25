@@ -17,7 +17,7 @@
 ## Checks
 
 ```sh
-<the check command written down in `AGENTS.md`>
+<the command this repository gates on>
 ```
 
 <Which parts of the change this covers, and which it does not. Delete the section if the repository has no gate.>
