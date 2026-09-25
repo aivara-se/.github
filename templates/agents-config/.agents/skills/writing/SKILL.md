@@ -18,7 +18,7 @@ Documentation is part of the change, not a follow-up task. A change that makes a
 ## How to write it
 
 - No stack bloat: **never** list the technologies used ("built with X, Y, Z"). Describe what the thing is for and what it does, not what it is made of.
-- No soft wraps: keep a paragraph on one line and let the viewer wrap it. Hard line breaks inside a paragraph survive into diffs and rendered output as artefacts.
+- **Never** hard-wrap: one paragraph, one bullet, one line — in every markdown file, this one included. The reader's viewer does the wrapping; a line break inside a sentence shows up in the diff and in the rendered page as an artefact.
 - Short paragraphs, present tense, imperative for instructions. No marketing adjectives, no "simply", no "just", no exclamation marks.
 - Every command quoted in prose must be the command the repository actually runs; if they differ, the document is wrong.
 - Concrete over abstract: a path, a command and an example beat a paragraph of principles. Delete any sentence that would survive unchanged in a different repository.
