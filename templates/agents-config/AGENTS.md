@@ -28,6 +28,8 @@ This section is steering, not policy. It is the one place where what matters rig
 {{REPO_CHECK_COMMAND}}
 ```
 
+Run the whole sequence, not just its fast part, and read every result — the exit code of the last command says nothing about the first.
+
 {{REPO_CHECK_NOTES}}
 
 ## Version Control

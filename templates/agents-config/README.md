@@ -2,7 +2,7 @@
 
 Work in this organisation is done by agents as much as by people, and every repository should hand them the same instructions. This directory is that shared text: it is kept once, here in the org's `.github` repository, and copied into a repository when that repository adopts the convention.
 
-It is a generalisation of `thani-sh/provar`'s agent configuration (analysed in `docs/provar-agents-analysis.md` in this repository, PR #1), taking its current shape from `aivara-se/bot-momo`'s `AGENTS.md`. The **current project focus** section, the single wrapper command humans, agents and CI all run, and the fixed review-report schema were kept. Provar's Go/TypeScript specifics, its machinery, and the four defects the analysis found were dropped. "What came from provar, and what did not" below is the honest list of both, including the parts that were dropped after the fact.
+It is a generalisation of `thani-sh/provar`'s agent configuration (analysed in `docs/provar-agents-analysis.md` in this repository, PR #1), taking its current shape from `aivara-se/bot-momo`'s `AGENTS.md`. The **current project focus** section, the checks a repository gates on written where humans, agents and CI all read them, and the fixed review-report schema were kept. Provar's Go/TypeScript specifics, its machinery, and the four defects the analysis found were dropped. "What came from provar, and what did not" below is the honest list of both, including the parts that were dropped after the fact.
 
 ## What is in here, and what gets copied
 
@@ -63,13 +63,15 @@ Every slot uses the same syntax: `{{UPPER_SNAKE_CASE}}`. There is no other templ
 | `{{REPO_OVERVIEW}}`          | yes      | one paragraph: what the repository is made of, and where its documents are           | `Static HTML with inline CSS — no build step, no dependencies...`      |
 | `{{CURRENT_FOCUS}}`          | yes      | the work wanted right now, and what not to touch                                     | `Polish the log page. Do not restructure the CSS.`                     |
 | `{{REPO_HOUSE_RULES}}`       | yes      | the rules true of this repository and nowhere else, one bullet each                  | `- **One accent hue: \`#f7a8d8\`.** Never add a second hue.`             |
-| `{{REPO_CHECK_COMMAND}}`     | yes      | **the single wrapper command** humans, agents and CI all run                         | `bun run check`                                                        |
-| `{{REPO_CHECK_NOTES}}`       | yes      | one paragraph: what that command cannot see, and how a reviewer checks it            | `Then the two things it cannot see: the phone viewport, and the rendered page.` |
+| `{{REPO_CHECK_COMMAND}}`     | yes      | **what this repository gates on**, one line per command — a single wrapper command where it has one, the sequence where it does not, and `# no automated gate in this repository` where it has none | `bun run check`                                                        |
+| `{{REPO_CHECK_NOTES}}`       | yes      | one paragraph: what those checks cannot see, and how a reviewer checks it            | `Then the two things it cannot see: the phone viewport, and the rendered page.` |
 | `{{DEFAULT_BRANCH}}`         | yes      | the branch work lands on                                                             | `main`                                                                 |
 | `{{REVIEW_REQUEST_TARGETS}}` | yes      | who a pull request asks for review                                                   | ``the operator (`thani-sh`) and one peer agent``                       |
 | `{{REPO_STRUCTURE}}`         | yes      | the repository map: one bullet per path that matters                                 | `- \`index.html\`: the single-screen front page`                         |
 
 House rules are imperative and checkable, and carry `ALWAYS` or `Never` where no judgement applies: a rule nobody can act on, or argue with, is not a rule. A house rule names the file, the class, the path or the command it is about.
+
+The check slot takes what this repository actually runs, one line per command. A repository with no automated gate writes `# no automated gate in this repository` in its place and says so in its handoffs, rather than inventing a command to fill it.
 
 No slot is left behind and no slot is invented: the table above, the slots in `AGENTS.md` and the values a repository writes into its copy are the same list. An unfilled slot means the adoption is unfinished — that is what step 3 checks.
 
@@ -84,7 +86,7 @@ head -4 .agents/skills/*/SKILL.md           # name, description, when-to-use in 
 
 The three checks are mechanical: no slot survives, the index lists the skills that exist and no others, and every skill's front matter is exactly three keys with `name` equal to its directory. Read them against the output rather than assuming; the index is the one part of the convention that a change can silently break.
 
-Then run the repository's own check command and quote its real output. CI must run the same command — if the two sequences differ, the CI file is the bug, and fixing it belongs in this change.
+Then run what the repository gates on and quote the real output. CI must run the same sequence — if the two differ, the CI file is the bug, and fixing it belongs in this change.
 
 ### Step 4 — land it
 
@@ -167,7 +169,7 @@ Kept, generalised:
 | `resources/` next to a `SKILL.md` for supporting files                                                                     | Simple, and it needs no index                                                                                                                                                                                                                           |
 | The fixed review-report schema — the verdict line, the summary, findings with evidence, the target design, the phased plan, the blueprint | The most transferable idea in provar: it makes two reviewers' reports comparable. It now lives inside the `review` skill, where the reader already is                                                                                                    |
 | A "Pre-Completion Verification" section inside a skill                                                                     | "What to run before you say done" belongs where the work happens                                                                                                                                                                                        |
-| One wrapper command that humans, agents and CI all run                                                                    | Removes command drift between the docs and CI                                                                                                                                                                                                          |
+| The repository's checks, written where a human, an agent and CI all read them                                                                                                             | Removes command drift between the docs and CI                                                                                                                                                                                                            |
 
 Added, because provar has none of it: the `when-to-use` front-matter key; a skill index that a pull request keeps true; convention versioning; a review verdict vocabulary; the "Bun for scripts" rule; and the house-rules section, so that a repository's own hard rules have a home in the shared file instead of a private corner of it.
 
