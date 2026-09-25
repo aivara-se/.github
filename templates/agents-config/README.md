@@ -2,7 +2,7 @@
 
 Work in this organisation is done by agents as much as by people, and every repository should hand them the same instructions. This directory is that shared text: it is kept once, here in the org's `.github` repository, and copied into a repository when that repository adopts the convention.
 
-It is a generalisation of `thani-sh/provar`'s agent configuration (analysed in `docs/provar-agents-analysis.md` in this repository, PR #1), taking its current shape from `aivara-se/bot-momo`'s `AGENTS.md`. The **current project focus** section, the checks a repository gates on written where humans, agents and CI all read them, and the fixed review-report schema were kept. Provar's Go/TypeScript specifics, its machinery, and the four defects the analysis found were dropped. "What came from provar, and what did not" below is the honest list of both, including the parts that were dropped after the fact.
+It is a generalisation of `thani-sh/provar`'s agent configuration, taking its current shape from `aivara-se/bot-momo`'s `AGENTS.md`. The analysis it rests on is not in this repository — it lived in a pull request that was closed unmerged — so its conclusions are recorded below. The **current project focus** section, the checks a repository gates on written where humans, agents and CI all read them, and the fixed review-report schema were kept. Provar's Go/TypeScript specifics, its machinery, and the four defects the analysis found were dropped. "What came from provar, and what did not" below is the honest list of both, including the parts that were dropped after the fact.
 
 ## What is in here, and what gets copied
 
