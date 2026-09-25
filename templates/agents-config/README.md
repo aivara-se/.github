@@ -2,8 +2,6 @@
 
 Work in this organisation is done by agents as much as by people, and every repository should hand them the same instructions. This directory is that shared text: it is kept once, here in the org's `.github` repository, and copied into a repository when that repository adopts the convention.
 
-It generalises an earlier agent configuration that is not part of this organisation, and takes its current shape from `aivara-se/bot-momo`'s `AGENTS.md`: the entry file, the skills it indexes, and the index that keeps them true. The **current project focus** section, the checks a repository gates on written where humans, agents and CI all read them, and the fixed review-report schema were kept. What was added, what was dropped, and why, is in "Where it came from, and what it does not carry" below.
-
 ## What is in here, and what gets copied
 
 ```
@@ -34,7 +32,7 @@ The steps below are literal. In them, the adopting repository is `/tmp/dummy-rep
 - A clone of the repository you are adopting into, and push access to a branch of it.
 - A clone of `aivara-se/.github` (this repository), for the template files.
 - An editor. There is no substitution script to install, no runtime to declare and no tool to run: the slots below are filled in by hand because a filled-in `AGENTS.md` is something a human has to mean.
-- The answers to the slot table in step 2. For a repository with a build toolchain you can read most of them from `package.json`, the CI workflow, or the existing `AGENTS.md`.
+- The answers to the slots in step 2. For a repository with a build toolchain you can read most of them from `package.json`, the CI workflow, or the existing `AGENTS.md`.
 
 ### Step 1 — copy the files
 
@@ -54,26 +52,26 @@ The shared sections run from the title to **Agent Skills**. A repository's own s
 
 Every slot uses the same syntax: `{{UPPER_SNAKE_CASE}}`. There is no other templating syntax anywhere in the copied tree, so `grep -rn '{{' <repo> --exclude-dir=.git` after step 3 must print nothing.
 
-| Slot                         | Required | Meaning                                                                             | Example                                                                         |
-| ---------------------------- | -------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `{{ORG}}`                    | yes      | the GitHub organisation that owns the repo and the convention                       | `aivara-se`                                                                     |
-| `{{CONVENTION_VERSION}}`     | yes      | the integer revision of this template you are adopting                              | `2`                                                                             |
-| `{{ADOPTED_FROM}}`           | yes      | commit in `aivara-se/.github` this copy came from (`git -C <clone> rev-parse HEAD`) | `9c5f6ed`                                                                       |
-| `{{REPO_PURPOSE}}`           | yes      | one sentence: what this repository is and who it is for                             | `The personal website of the MaMa agent, published at https://mama.aivara.se.`  |
-| `{{REPO_OVERVIEW}}`          | yes      | one paragraph: what the repository is made of, and where its documents are          | `Static HTML with inline CSS — no build step, no dependencies...`               |
-| `{{CURRENT_FOCUS}}`          | yes      | the work wanted right now, and what not to touch                                    | `Polish the log page. Do not restructure the CSS.`                              |
-| `{{REPO_HOUSE_RULES}}`       | yes      | the rules true of this repository and nowhere else, one bullet each                 | `- **One accent hue: \`#f7a8d8\`.** Never add a second hue.`                    |
-| `{{REPO_CHECK_COMMAND}}`     | yes      | **what this repository gates on** — one command per line                            | `bun run check`                                                                 |
-| `{{REPO_CHECK_NOTES}}`       | yes      | one paragraph: what those checks cannot see, and how a reviewer checks it           | `Then the two things it cannot see: the phone viewport, and the rendered page.` |
-| `{{DEFAULT_BRANCH}}`         | yes      | the branch work lands on                                                            | `main`                                                                          |
-| `{{REVIEW_REQUEST_TARGETS}}` | yes      | who a pull request asks for review                                                  | ``the operator (`thani-sh`) and one peer agent``                                |
-| `{{REPO_STRUCTURE}}`         | yes      | the repository map: one bullet per path that matters                                | `- \`index.html\`: the single-screen front page`                                |
+All twelve are required. Each line gives the slot, what goes in it, and an example.
+
+- `{{ORG}}` — the GitHub organisation that owns the repository and the convention. Example: `aivara-se`.
+- `{{CONVENTION_VERSION}}` — the integer revision of this template you are adopting. Example: `2`.
+- `{{ADOPTED_FROM}}` — the commit in `aivara-se/.github` this copy came from, from `git -C <clone> rev-parse HEAD`. Example: `9c5f6ed`.
+- `{{REPO_PURPOSE}}` — one sentence: what this repository is, and who it is for. Example: `The personal website of the MaMa agent, published at https://mama.aivara.se.`.
+- `{{REPO_OVERVIEW}}` — one paragraph: what the repository is made of, and where its documents are. Example: `Static HTML with inline CSS — no build step, no dependencies.`.
+- `{{CURRENT_FOCUS}}` — the work wanted right now, and what not to touch. Example: `Polish the log page. Do not restructure the CSS.`.
+- `{{REPO_HOUSE_RULES}}` — the rules true of this repository and nowhere else, one bullet each, each marked `ALWAYS` or `Never` where no judgement applies. Example: `Never add a second accent hue.`.
+- `{{REPO_CHECK_COMMAND}}` — **what this repository gates on**, one command per line. Example: `bun run check`.
+- `{{REPO_CHECK_NOTES}}` — one paragraph: what those checks cannot see, and how a reviewer checks it. Example: `Then the two things it cannot see: the phone viewport, and the rendered page.`.
+- `{{DEFAULT_BRANCH}}` — the branch work lands on. Example: `main`.
+- `{{REVIEW_REQUEST_TARGETS}}` — who a pull request asks for review. Example: the operator and one peer agent.
+- `{{REPO_STRUCTURE}}` — the repository map: one bullet per path that matters, each saying what the path is. Example: a bullet naming `index.html` and calling it the single-screen front page.
 
 House rules are imperative and checkable, and carry `ALWAYS` or `Never` where no judgement applies: a rule nobody can act on, or argue with, is not a rule. A house rule names the file, the class, the path or the command it is about.
 
 The check slot takes what this repository actually runs, one line per command. A repository with no automated gate writes `# no automated gate in this repository` in its place and says so in its handoffs, rather than inventing a command to fill it.
 
-No slot is left behind and no slot is invented: the table above, the slots in `AGENTS.md` and the values a repository writes into its copy are the same list. An unfilled slot means the adoption is unfinished — that is what step 3 checks.
+No slot is left behind and no slot is invented: the list above, the slots in `AGENTS.md` and the values a repository writes into its copy are the same list. An unfilled slot means the adoption is unfinished — that is what step 3 checks.
 
 ### Step 3 — check the result
 
@@ -113,7 +111,7 @@ Rules for a skill under this convention:
 - **One concern per skill.** A reader should be able to act on it, not choose between it and another skill. "Coding" is a concern; "Go coding in the API package" is a section of one.
 - **Front matter is exactly three keys.** `name` must equal the directory name; `description` is one sentence on what the skill covers; `when-to-use` is the trigger in the reader's own words. Nothing else — no versions, no tool lists, no paths, because nothing consumes them.
 - **Keep it under about 120 lines.** Past that it is either two skills or the detail belongs in `resources/`.
-- **Name every file the skill ships.** A `resources/` file or a template that the body does not reference is invisible; the configuration this generalises shipped two README templates in exactly that state.
+- **Name every file the skill ships.** A `resources/` file or a template that the body does not reference is invisible: nothing points the reader at it, and a reviewer cannot see it either.
 - **A skill stands on its own.** It is read by someone who may never open another file, so it names no file of the convention — not `AGENTS.md`, not another skill — and it carries the rule rather than the pointer. The direction is the other way round: the entry file points at the skills, and the skill answers. Where a rule needs a command, the skill names the concept ("the repository's check command") and leaves the literal command in the one place it is written down.
 - **No language or tool specifics — bar the organisation's own standing choices.** Formatting and linting are the language's own tools, and the package manager and the test runner are the repository's, so a shared skill that names `go vet` or `cargo test` is broken in the next repository. The one exception is a rule the organisation itself has decided, like the Bun-script rule in the `coding` skill: that is policy, and it belongs in the skill that carries it.
 - **Authoring a skill in a repository is local.** Moving it into `templates/agents-config/.agents/skills/` is an org-wide change: do it when a second repository wants it, in a pull request of its own.
@@ -151,39 +149,3 @@ Skills are flat until a repository has more than eight of them or two clearly un
 ## Upgrading an adopted repository
 
 The convention is versioned by an integer, recorded in `AGENTS.md` as `{{CONVENTION_VERSION}}`, with `{{ADOPTED_FROM}}` holding the commit in `aivara-se/.github` the copy came from. To move a repository to a newer revision: copy the new `AGENTS.md` and `.agents/skills/` over a scratch checkout, carry the repository's own values and sections across (steps 1 and 2), bump the version and the commit, and run step 3 again. Open the pull request as usual. Do not re-copy blindly — the diff between the two versions is the review artifact, and the sections it deletes are the part a reviewer must see.
-
-## Where it came from, and what it does not carry
-
-The convention was generalised from one repository's earlier agent configuration: another language, another toolchain, and no intention of being org-wide. Kept, generalised:
-
-| Kept                                                                                                                                      | Why                                                                                                                                                                                                                                                                                         |
-| ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A root `AGENTS.md` as the single entry point, tool-neutral, no vendor manifest                                                            | It is what an agent reads first, and it costs nothing to keep true                                                                                                                                                                                                                          |
-| The section order — status → focus → house rules → tooling → verify → version control → structure → skills                                | The ordering rationale survives the language change: temporary steering before standing rules, "ask first" before commands, the skill index last. A repository's own sections sit after the house rules and above Version Control, where they cannot contradict the shared rules below them |
-| `## Current Project Focus`                                                                                                                | Turns steering that would otherwise be repeated in chat into a reviewable statement                                                                                                                                                                                                         |
-| `ALWAYS`/`Never` instead of "consider"/"prefer"                                                                                           | Rules that admit no judgement are marked as such                                                                                                                                                                                                                                            |
-| Conventional Commits, lowercase hyphenated branches, no merge commits                                                                     | Org-wide policy, not repo-specific                                                                                                                                                                                                                                                          |
-| A repo map with an explicit "where does new markdown go" rule                                                                             | It is the cheapest guard against documentation sprawl — provided the map is true                                                                                                                                                                                                            |
-| `.agents/skills/<name>/SKILL.md` with minimal YAML front matter                                                                           | No registry, no tooling, discoverable by reading one file                                                                                                                                                                                                                                   |
-| Splitting skills by concern (coding / testing / writing), not by language                                                                 | The concerns are stable across a polyglot org; the languages are not                                                                                                                                                                                                                        |
-| `resources/` next to a `SKILL.md` for supporting files                                                                                    | Simple, and it needs no index                                                                                                                                                                                                                                                               |
-| The fixed review-report schema — the verdict line, the summary, findings with evidence, the target design, the phased plan, the blueprint | The most transferable idea in that configuration: it makes two reviewers' reports comparable. It now lives inside the `review` skill, where the reader already is                                                                                                                           |
-| A "Pre-Completion Verification" section inside a skill                                                                                    | "What to run before you say done" belongs where the work happens                                                                                                                                                                                                                            |
-| The repository's checks, written where a human, an agent and CI all read them                                                             | Removes command drift between the docs and CI                                                                                                                                                                                                                                               |
-
-Added, because the earlier configuration had none of it: the `when-to-use` front-matter key; a skill index that a pull request keeps true; convention versioning; a review verdict vocabulary; the "Bun for scripts" rule; and the house-rules section, so that a repository's own hard rules have a home in the shared file instead of a private corner of it.
-
-Dropped: all product prose and the domain-model freeze; the Go-specific rules (standard-library-first, `panic` policy, `any` avoidance, naming and comment conventions); the "no empty lines inside a function body" house style; every literal command; the monorepo map and the `docs/SYSTEM.md` filename it got wrong; the README scaffolds written for it.
-
-Later revisions dropped the machinery, because instruction files should not need a runtime to be true:
-
-- **`.agents/config.yml`** — a second home for commands and paths, next to the one in `AGENTS.md`. Commands are written down once, in `AGENTS.md`; the skills name no file of the convention, and the entry file is what points at them.
-- **`.agents/scripts/validate_agents_config.py`** — a Python checker for an index that three lines of shell can check, and a runtime every adopting repository would have had to have.
-- **`.agents/prompts/code-review.md`** — a prompt file separate from the skill that used it. The schema is in the `review` skill now, but the defect it shipped (a schema reachable from nowhere) is still not inherited, so the file is gone rather than duplicated.
-- **`TEMPLATE.md`** and **`.agents/skills/repo-workflow/`** — a scaffold and a workflow skill whose content the skill list in `AGENTS.md` already covered.
-
-Three defects in the earlier configuration are deliberately not inherited:
-
-1. **Two package managers, one instruction** — its instructions mandated one runtime while its manifest and CI used another. Here the toolchain rule is one line, and the toolchain is the one the repository already uses.
-2. **A skill's resources unreachable from the skill** — its writing skill shipped two README templates that nothing referenced. Here every skill names the files it ships, and a reviewer fails a skill that does not.
-3. **The review prompt is never referenced** — its `.agents/prompts/code-review.md` was invisible from `AGENTS.md`. Here the schema is part of the `review` skill, which the index lists.

@@ -19,6 +19,7 @@ Documentation is part of the change, not a follow-up task. A change that makes a
 
 - No stack bloat: **never** list the technologies used ("built with X, Y, Z"). Describe what the thing is for and what it does, not what it is made of.
 - **Never** hard-wrap: one paragraph, one bullet, one line — in every markdown file, this one included. The reader's viewer does the wrapping; a line break inside a sentence shows up in the diff and in the rendered page as an artefact.
+- **Never** write a table wider than 80 characters. A table that scrolls sideways cannot be read in a terminal, a diff, or on a phone, and it costs a reader more than the columns save. Content that repeats — a slot and its meaning, a rule and its reason — is a list, one item per line, or sub-headings with a paragraph under each.
 - Short paragraphs, present tense, imperative for instructions. No marketing adjectives, no "simply", no "just", no exclamation marks.
 - Every command quoted in prose must be the command the repository actually runs; if they differ, the document is wrong.
 - Concrete over abstract: a path, a command and an example beat a paragraph of principles. Delete any sentence that would survive unchanged in a different repository.
@@ -27,4 +28,4 @@ Documentation is part of the change, not a follow-up task. A change that makes a
 
 - Every application and every shared library in this repository has a `README.md` at its root.
 - Start from `resources/readme-template.md`, next to this file, rather than from a blank page; fill it in and delete the guidance you did not use.
-- A README answers, in this order: what this is, how to run it locally, how to use it, how to check it. It does not describe the repository's history, its roadmap, or its org chart.
+- A README answers, in this order: what this is, how to run it locally, how to use it, how to check it. It does not carry history: not where the code came from, not what it replaced, not how an earlier version behaved. That belongs in the commit and the pull request, and in a README it is padding that pushes the useful part further down. Nor does it describe a roadmap or an org chart.
