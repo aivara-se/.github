@@ -10,17 +10,17 @@ Documentation is part of the change, not a follow-up task. A change that makes a
 
 ## Where a fact lives
 
-- One fact, one home. The authoritative documents are the ones in the repository map in `AGENTS.md`: one for architecture, one for product, one for design. Link to them; do not restate their content anywhere else, including here.
+- One fact, one home. A repository has one authoritative document per subject — architecture, product, design — and each of them is the only copy of what it says. Link to them; do not restate their content anywhere else, including here.
 - User-facing behaviour belongs in the product document, technical design in the architecture document, interface and visual decisions in the design document. When a fact could live in two of them, it lives in one and the other links to it.
 - Code comments explain **why**. A comment that restates the line beneath it is noise: delete the comment, or delete the line.
-- If the change makes any document — including `AGENTS.md` and its repository map — untrue, fix that document in the same change.
+- If the change makes any document untrue — the repository map included — fix that document in the same change.
 
 ## How to write it
 
 - No stack bloat: **never** list the technologies used ("built with X, Y, Z"). Describe what the thing is for and what it does, not what it is made of.
 - No soft wraps: keep a paragraph on one line and let the viewer wrap it. Hard line breaks inside a paragraph survive into diffs and rendered output as artefacts.
 - Short paragraphs, present tense, imperative for instructions. No marketing adjectives, no "simply", no "just", no exclamation marks.
-- Every command quoted in prose must be the command written down in `AGENTS.md`; if they differ, the document is wrong.
+- Every command quoted in prose must be the command the repository actually runs; if they differ, the document is wrong.
 - Concrete over abstract: a path, a command and an example beat a paragraph of principles. Delete any sentence that would survive unchanged in a different repository.
 
 ## READMEs

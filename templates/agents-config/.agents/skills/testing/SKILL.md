@@ -20,11 +20,10 @@ when-to-use: Any change that adds or alters behaviour, any bug fix, and any chan
 
 - Follow the placement convention the repository already uses; if it has none, put the test next to the code it verifies and say so in the pull request.
 - Test data belongs with the test, named for the case it covers. Do not commit a fixture that another test would silently depend on.
-- A harness that is code is code: written in the repository's own language and run with its package manager, not as a shell script of commands (see the `coding` skill).
+- A harness that is code is code: written in the repository's own language and run with its package manager, not as a shell script of commands.
 
 ## Running them
 
-- The commands live once, in `AGENTS.md`: the test command for the narrow loop, the check command for the final tree. Do not restate them here, or in the CI file, where they will drift out of step.
-- Run the narrow test while iterating; run the check command on the final tree before you hand the work off, and quote its output.
+- The repository has two commands and this skill has neither of them written down: the narrow test command for while you are iterating, and the check command for the final tree. Run the narrow one first, the check command before you hand the work off, and quote its output — a report of either without the command and the tree it ran against is not a verification.
 - If the repository has no test command at all, say that in the handoff instead of claiming coverage.
 - A test that passes only sometimes is a broken test. Fix it or delete it in the same change — **never** retry until green, and never mark a flaky test as expected failure to get past a gate.

@@ -47,7 +47,7 @@ New markdown goes in the directory that already owns its subject, and a fact has
 
 ## Agent Skills
 
-`.agents/skills/` holds one skill per kind of work — the procedure to follow, not a second copy of these instructions. Each skill declares in its front matter what it covers and its `when-to-use`: the situation in which you must open it. Read the skill that covers the work before you start it.
+`.agents/skills/` holds one skill per kind of work — the procedure to follow, not a second copy of these instructions. A skill stands on its own: it names no file of this convention and points at no other skill, so a reader who has it has everything it needs. This file is what points at the skills; they never point back. Each skill declares in its front matter what it covers and its `when-to-use`: the situation in which you must open it. Read the skill that covers the work before you start it.
 
 - .agents/skills/coding/SKILL.md
 - .agents/skills/testing/SKILL.md

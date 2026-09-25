@@ -21,7 +21,7 @@ templates/agents-config/
 
 `README.md` stays in this directory: it is about the convention, not about the adopting repository. Everything else is copied.
 
-That is the whole convention: one entry file, and the skills it indexes. There is no configuration file, no checker script, no prompt file and no scaffold file — nothing that can drift out of step with the instructions, because there is nothing but instructions. Commands, paths and the repository's own rules are written once, in `AGENTS.md`, and the skills point at it rather than repeating it. Where a repository does need a script, it is a Bun script (see **Tooling** in `AGENTS.md`); this template ships none of its own.
+That is the whole convention: one entry file, and the skills it indexes. There is no configuration file, no checker script, no prompt file and no scaffold file — nothing that can drift out of step with the instructions, because there is nothing but instructions. Commands, paths and the repository's own rules are written once, in `AGENTS.md`; the skills are written to stand on their own — a skill names no file of the convention and points at no other skill — and it is the entry file that points at them. Where a repository does need a script, it is a Bun script (see **Tooling** in `AGENTS.md`); this template ships none of its own.
 
 The copied files are written to the formatting defaults of the org's usual tooling (markdown as `prettier` leaves it), so a repository whose gate checks the whole tree does not inherit a red check from files it must not reformat. Formatting changes belong here, in the template, not in a per-repository copy.
 
@@ -112,7 +112,8 @@ Rules for a skill under this convention:
 - **Front matter is exactly three keys.** `name` must equal the directory name; `description` is one sentence on what the skill covers; `when-to-use` is the trigger in the reader's own words. Nothing else — no versions, no tool lists, no paths, because nothing consumes them.
 - **Keep it under about 120 lines.** Past that it is either two skills or the detail belongs in `resources/`.
 - **Name every file the skill ships.** A `resources/` file or a template that the body does not reference is invisible; provar shipped two README templates in exactly that state.
-- **No language or tool specifics, and no restated commands.** Commands and paths come from `AGENTS.md`, which is their one home; a skill that quotes a command a second time is a skill that will disagree with it eventually.
+- **A skill stands on its own.** It is read by someone who may never open another file, so it names no file of the convention — not `AGENTS.md`, not another skill — and it carries the rule rather than the pointer. The direction is the other way round: the entry file points at the skills, and the skill answers. Where a rule needs a command, the skill names the concept ("the repository's check command") and leaves the literal command in the one place it is written down.
+- **No language or tool specifics — bar the organisation's own standing choices.** Formatting and linting are the language's own tools, and the package manager and the test runner are the repository's, so a shared skill that names `go vet` or `cargo test` is broken in the next repository. The one exception is a rule the organisation itself has decided, like the Bun-script rule in the `coding` skill: that is policy, and it belongs in the skill that carries it.
 - **Authoring a skill in a repository is local.** Moving it into `templates/agents-config/.agents/skills/` is an org-wide change: do it when a second repository wants it, in a pull request of its own.
 
 ### The block to copy
@@ -174,7 +175,7 @@ Dropped: all product prose and the domain-model freeze; the Go-specific rules (s
 
 Later revisions dropped the machinery, because instruction files should not need a runtime to be true:
 
-- **`.agents/config.yml`** — a second home for commands and paths, next to the one in `AGENTS.md`. Commands are written down once, in `AGENTS.md`, and the skills point there.
+- **`.agents/config.yml`** — a second home for commands and paths, next to the one in `AGENTS.md`. Commands are written down once, in `AGENTS.md`; the skills name no file of the convention, and the entry file is what points at them.
 - **`.agents/scripts/validate_agents_config.py`** — a Python checker for an index that three lines of shell can check, and a runtime every adopting repository would have had to have.
 - **`.agents/prompts/code-review.md`** — a prompt file separate from the skill that used it. The schema is in the `review` skill now, but the defect provar shipped (a schema reachable from nowhere) is still not inherited, so the file is gone rather than duplicated.
 - **`TEMPLATE.md`** and **`.agents/skills/repo-workflow/`** — a scaffold and a workflow skill whose content the skill list in `AGENTS.md` already covered.
