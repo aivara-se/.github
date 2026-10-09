@@ -1,0 +1,23 @@
+name: verify-settings
+
+# Run by hand: the Actions tab, or `gh workflow run verify-settings`.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+      # The script imports nothing but Bun's own globals, so there is no install step.
+      - name: Check every repository against docs/SETTINGS.md
+        run: bun run verify-settings
+        env:
+          GH_TOKEN: ${{ secrets.ORG_READ_TOKEN }}
