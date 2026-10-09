@@ -1,0 +1,14 @@
+{
+  "name": "aivara-se-dot-github",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "verify-settings": "bun run scripts/verify-settings.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^7"
+  }
+}
