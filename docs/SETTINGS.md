@@ -20,6 +20,7 @@ Everything on the default branch arrives through a pull request, and a push stra
 
 - One approving review is required, and the author's own approval does not count.
 - A commit GitHub cannot attribute to an account needs one approval beyond that. Work pushed under an identity that is not linked to the account it belongs to takes a second review, so link the identity before the push.
+- A push to the branch after a review dismisses that review's approval, so an approval covers the commits it was given for: push first, and ask for review on what will merge.
 - Force-pushing the default branch, and deleting it, are refused.
 - The ruleset matches the default branch itself (`~DEFAULT_BRANCH`) rather than the name `main`, so the rules follow a rename of it.
 - No check is required to merge. Continuous integration runs, and a red run is worth reading before approving, but the approval is what stops a merge.
@@ -30,6 +31,10 @@ Everything on the default branch arrives through a pull request, and a push stra
 
 - Actions are enabled, and the workflow token is read-only by default with `can_approve_pull_request_reviews` false: a workflow cannot write to the repository, and it cannot approve a pull request.
 - The allowed set is the GitHub-owned actions and the actions of verified creators, plus the single third-party action the organisation pins: `oven-sh/setup-bun@*`. An action outside that set does not run.
+
+## Features
+
+Issues are on, and Discussions are off. The wiki and Projects are off: a repository here carries one place to raise and discuss work, and documents are files under review rather than pages outside it.
 
 ## Security
 
