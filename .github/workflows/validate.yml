@@ -1,6 +1,6 @@
-name: verify-settings
+name: validate
 
-# Run by hand: the Actions tab, or `gh workflow run verify-settings`.
+# Run by hand: the Actions tab, or `gh workflow run validate`.
 on:
   workflow_dispatch:
 

@@ -79,6 +79,9 @@ const BASELINE = {
     dependabot_alerts: true,
     automated_security_fixes: true,
   },
+  workflow: {
+    name: "validate",
+  },
 } as const;
 
 /**
@@ -255,6 +258,33 @@ async function checkRepository(org: string, repository: string, auth: string): P
   if (repo.status !== 200) {
     record("repository is readable", "HTTP 200", `HTTP ${repo.status}`);
     return { repository, findings };
+  }
+
+  // The gate is a workflow named validate on the default branch. The actions list
+  // returns workflows registered on any branch, so read the default branch's tree
+  // and the name each workflow file declares.
+  const branch = typeof repo.body.default_branch === "string" ? repo.body.default_branch : "";
+  const workflows = await request(
+    `/repos/${org}/${repository}/contents/.github/workflows?ref=${encodeURIComponent(branch)}`,
+    auth,
+  );
+  if (workflows.status === 404) {
+    record("workflow.validate", "present", "absent");
+  } else if (workflows.status !== 200 || !Array.isArray(workflows.body)) {
+    record("workflow.validate", "HTTP 200", `HTTP ${workflows.status}`);
+  } else {
+    let found = false;
+    for (const entry of workflows.body as Json[]) {
+      if (entry.type !== "file" || !/\.ya?ml$/.test(entry.name)) continue;
+      const blob = await request(`/repos/${org}/${repository}/git/blobs/${entry.sha}`, auth);
+      if (blob.status !== 200 || typeof blob.body.content !== "string") continue;
+      const text = Buffer.from(blob.body.content, "base64").toString("utf8");
+      if (/^name:\s*['"]?validate['"]?\s*$/m.test(text)) {
+        found = true;
+        break;
+      }
+    }
+    expect("workflow.validate", found, true);
   }
 
   // The repository-level settings come from GraphQL. The REST repository object
