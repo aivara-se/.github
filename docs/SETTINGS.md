@@ -31,7 +31,7 @@ Everything on the default branch arrives through a pull request, and a push stra
 
 - Actions are enabled, and the workflow token is read-only by default with `can_approve_pull_request_reviews` false: a workflow cannot write to the repository, and it cannot approve a pull request.
 - The allowed set is the GitHub-owned actions and the actions of verified creators, plus the single third-party action the organisation pins: `oven-sh/setup-bun@*`. An action outside that set does not run.
-- Every repository carries a workflow named `validate`, in `.github/workflows/validate.yml`: it is where the repository's checks run, and the name a run is looked for under.
+- Every repository carries a workflow named `validate`: it is where the repository's checks run, and the name a run is looked for under.
 
 ## Features
 
