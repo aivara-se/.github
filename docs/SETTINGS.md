@@ -11,7 +11,7 @@ Rebase only: the default branch moves one commit at a time, and a change lands a
 - Merge commits and squash merges are off, and the ruleset's pull-request rule accepts `rebase` as the only merge method, so the merge box offers **Rebase and merge** and nothing else.
 - Linear history is required, so a branch that contains a merge commit is refused instead of being flattened on the way in.
 - The head branch is deleted when a pull request merges. Branch off the default branch, keep the branch local to the work, and expect it to be gone afterwards.
-- Auto-merge is off: a pull request merges when someone merges it, after review.
+- Auto-merge is on: an author can arm a pull request to merge itself once the ruleset's conditions hold, so the approving review is the last act before it lands rather than a step before someone clicks merge.
 - **Update branch** is off. Rebase your branch on the default branch and force-push your own branch, which is safe on a branch only you work on.
 
 ## Pull requests

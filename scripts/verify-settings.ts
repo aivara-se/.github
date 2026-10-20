@@ -34,7 +34,7 @@ const BASELINE = {
     allow_squash_merge: false,
     allow_rebase_merge: true,
     delete_branch_on_merge: true,
-    allow_auto_merge: false,
+    allow_auto_merge: true,
     allow_update_branch: false,
     has_issues: true,
     has_discussions: false,
