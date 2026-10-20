@@ -23,7 +23,7 @@ Everything on the default branch arrives through a pull request, and a push stra
 - The `validate` check is required: a pull request merges only when the `validate` run for its last commit has passed. A red, running or absent `validate` check blocks the merge.
 - The check is the job's name, not the workflow file's. A workflow named `validate` runs on every pull request and reports a job named `validate`.
 - A job that a condition skips reports success and satisfies the check without running. A `paths` filter on the workflow's trigger is not that: the workflow never starts, the check stays pending, and the merge is blocked.
-- The branch does not have to be up to date with the default branch to merge. Rebase it before asking for review when the default branch has moved.
+- The branch must be up to date with the default branch: a pull request whose branch is behind does not merge until it is rebased on the default branch and pushed again, and the check runs again on the new head.
 - A review that requests changes blocks the merge until that reviewer approves the pull request, or someone with write access dismisses the review.
 - The approval has to cover the last push. A push to the branch dismisses the approvals the change invalidated, and an approval from the person who pushed last does not satisfy the requirement, so push first and ask for review on what will merge.
 - Force-pushing the default branch, and deleting it, are refused.

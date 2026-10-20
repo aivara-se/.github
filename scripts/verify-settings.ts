@@ -62,7 +62,7 @@ const BASELINE = {
     // which is also the name GitHub reports the check under.
     required_status_checks: {
       contexts: ["validate"],
-      strict: false,
+      strict: true,
     },
   },
   actions: {
