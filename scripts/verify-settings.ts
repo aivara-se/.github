@@ -274,6 +274,21 @@ export function checkNames(jobs: unknown): string[] {
   });
 }
 
+/**
+ * What a repository's workflow files say about the required gate. A workflow counts
+ * when its name is `validate`; the gate then needs one of those to run on pull
+ * requests and one of them to report a check named `validate`. Two files may carry
+ * the name, so each predicate looks at any of them rather than at all of them.
+ */
+export function validateGate(documents: Json[]): { named: boolean; pullRequest: boolean; checkName: boolean } {
+  const named = documents.filter((document) => document.name === "validate");
+  return {
+    named: named.length > 0,
+    pullRequest: named.some((document) => triggerNames(document.on).includes("pull_request")),
+    checkName: named.some((document) => checkNames(document.jobs).includes("validate")),
+  };
+}
+
 async function checkRepository(org: string, repository: string, auth: string): Promise<Result> {
   const findings: Finding[] = [];
   const record = (setting: string, expected: unknown, actual: unknown): void => {
@@ -305,7 +320,7 @@ async function checkRepository(org: string, repository: string, auth: string): P
   } else if (workflows.status !== 200 || !Array.isArray(workflows.body)) {
     record("workflow.validate", "HTTP 200", `HTTP ${workflows.status}`);
   } else {
-    const named: Json[] = [];
+    const documents: Json[] = [];
     for (const entry of workflows.body as Json[]) {
       if (entry.type !== "file" || !/\.ya?ml$/.test(entry.name)) continue;
       const blob = await request(`/repos/${org}/${repository}/git/blobs/${entry.sha}`, auth);
@@ -323,21 +338,14 @@ async function checkRepository(org: string, repository: string, auth: string): P
         }
         continue;
       }
-      if (document.name === BASELINE.workflow.name) named.push(document);
+      documents.push(document);
     }
-    if (named.length === 0) {
+    const gate = validateGate(documents);
+    if (!gate.named) {
       record("workflow.validate", "present", "absent");
     } else {
-      expect(
-        "workflow.validate.pull_request",
-        named.some((document) => triggerNames(document.on).includes("pull_request")),
-        true,
-      );
-      expect(
-        "workflow.validate.check_name",
-        named.some((document) => checkNames(document.jobs).includes(BASELINE.workflow.name)),
-        true,
-      );
+      expect("workflow.validate.pull_request", gate.pullRequest, true);
+      expect("workflow.validate.check_name", gate.checkName, true);
     }
   }
 
