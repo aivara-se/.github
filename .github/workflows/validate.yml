@@ -1,14 +1,32 @@
 name: validate
 
-# Run by hand: the Actions tab, or `gh workflow run validate`.
+# `validate` runs on every pull request and is the check the default branch requires.
+# `verify` is the organisation-wide settings check, run by hand: the Actions tab, or
+# `gh workflow run validate`. It needs ORG_READ_TOKEN, which a pull request from a fork
+# does not receive.
 on:
+  pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+      - name: Install
+        run: bun install --frozen-lockfile
+      - name: Type check
+        run: bun x tsc --noEmit
+
   verify:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

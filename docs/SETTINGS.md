@@ -20,11 +20,15 @@ Everything on the default branch arrives through a pull request, and a push stra
 
 - One approving review is required, and the author's own approval does not count.
 - A commit GitHub cannot attribute to an account needs one approval beyond that. Work pushed under an identity that is not linked to the account it belongs to takes a second review, so link the identity before the push.
-- A push to the branch after a review dismisses that review's approval, so an approval covers the commits it was given for: push first, and ask for review on what will merge.
+- The `validate` check is required: a pull request merges only when the `validate` run for its last commit has passed. A red, running or absent `validate` check blocks the merge.
+- The check is the job's name, not the workflow file's. A workflow named `validate` runs on every pull request and reports a job named `validate`.
+- A job that a condition skips reports success and satisfies the check without running. A `paths` filter on the workflow's trigger is not that: the workflow never starts, the check stays pending, and the merge is blocked.
+- The branch does not have to be up to date with the default branch to merge. Rebase it before asking for review when the default branch has moved.
+- A review that requests changes blocks the merge until that reviewer approves the pull request, or someone with write access dismisses the review.
+- The approval has to cover the last push. A push to the branch dismisses the approvals the change invalidated, and an approval from the person who pushed last does not satisfy the requirement, so push first and ask for review on what will merge.
 - Force-pushing the default branch, and deleting it, are refused.
 - The ruleset matches the default branch itself (`~DEFAULT_BRANCH`) rather than the name `main`, so the rules follow a rename of it.
-- No check is required to merge. Continuous integration runs, and a red run is worth reading before approving, but the approval is what stops a merge.
-- Code-owner review, review of the last push, and review-thread resolution are not required.
+- Code-owner review and review-thread resolution are not required.
 - The bypass list is empty, so there is no emergency lane: a rule that is wrong is fixed by a pull request against the ruleset.
 
 ## Actions
