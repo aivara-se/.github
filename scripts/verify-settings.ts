@@ -47,16 +47,22 @@ const BASELINE = {
     enforcement: "active",
     conditions: { ref_name: { include: ["~DEFAULT_BRANCH"], exclude: [] } },
     bypass_actors: 0,
-    required_rules: ["deletion", "non_fast_forward", "required_linear_history", "pull_request"],
-    forbidden_rules: ["required_status_checks"],
+    required_rules: ["deletion", "non_fast_forward", "required_linear_history", "pull_request", "required_status_checks"],
+    forbidden_rules: [],
     pull_request: {
       required_approving_review_count: 1,
       dismiss_stale_reviews_on_push: true,
       require_extra_approval_for_unattributed_changes: true,
       require_code_owner_review: false,
-      require_last_push_approval: false,
+      require_last_push_approval: true,
       required_review_thread_resolution: false,
       allowed_merge_methods: ["rebase"],
+    },
+    // `validate` is the job name in every repository's .github/workflows/validate.yml,
+    // which is also the name GitHub reports the check under.
+    required_status_checks: {
+      contexts: ["validate"],
+      strict: false,
     },
   },
   actions: {
@@ -245,6 +251,29 @@ function canonical(value: unknown): string {
   return JSON.stringify(value);
 }
 
+/**
+ * The trigger names a workflow declares. `on:` takes a name, a list of names, or a
+ * map whose keys are the names.
+ */
+export function triggerNames(on: unknown): string[] {
+  if (typeof on === "string") return [on];
+  if (Array.isArray(on)) return on.filter((name): name is string => typeof name === "string");
+  if (on !== null && typeof on === "object") return Object.keys(on as Json);
+  return [];
+}
+
+/**
+ * The names the checks of a workflow are reported under: a job's `name` when it sets
+ * one, and its key under `jobs` otherwise.
+ */
+export function checkNames(jobs: unknown): string[] {
+  if (jobs === null || typeof jobs !== "object") return [];
+  return Object.entries(jobs as Json).map(([key, job]) => {
+    const name = (job as Json | null)?.name;
+    return typeof name === "string" ? name : key;
+  });
+}
+
 async function checkRepository(org: string, repository: string, auth: string): Promise<Result> {
   const findings: Finding[] = [];
   const record = (setting: string, expected: unknown, actual: unknown): void => {
@@ -260,9 +289,12 @@ async function checkRepository(org: string, repository: string, auth: string): P
     return { repository, findings };
   }
 
-  // The gate is a workflow named validate on the default branch. The actions list
-  // returns workflows registered on any branch, so read the default branch's tree
-  // and the name each workflow file declares.
+  // The gate is a workflow named validate that runs on pull requests and reports a
+  // check named validate. A required status check matches the name of the check run,
+  // which is the job's name, so a workflow called validate whose job is called
+  // anything else satisfies a name check and never satisfies the rule. The actions
+  // list returns workflows registered on any branch, so read the default branch's
+  // files and the names each one declares.
   const branch = typeof repo.body.default_branch === "string" ? repo.body.default_branch : "";
   const workflows = await request(
     `/repos/${org}/${repository}/contents/.github/workflows?ref=${encodeURIComponent(branch)}`,
@@ -273,18 +305,40 @@ async function checkRepository(org: string, repository: string, auth: string): P
   } else if (workflows.status !== 200 || !Array.isArray(workflows.body)) {
     record("workflow.validate", "HTTP 200", `HTTP ${workflows.status}`);
   } else {
-    let found = false;
+    const named: Json[] = [];
     for (const entry of workflows.body as Json[]) {
       if (entry.type !== "file" || !/\.ya?ml$/.test(entry.name)) continue;
       const blob = await request(`/repos/${org}/${repository}/git/blobs/${entry.sha}`, auth);
       if (blob.status !== 200 || typeof blob.body.content !== "string") continue;
       const text = Buffer.from(blob.body.content, "base64").toString("utf8");
-      if (/^name:\s*['"]?validate['"]?\s*$/m.test(text)) {
-        found = true;
-        break;
+      let document: Json | null = null;
+      try {
+        document = Bun.YAML.parse(text) as Json;
+      } catch {
+        document = null;
       }
+      if (document === null) {
+        if (entry.name === "validate.yml" || entry.name === "validate.yaml") {
+          record(`workflow.${entry.name}`, "parses", "unparsable");
+        }
+        continue;
+      }
+      if (document.name === BASELINE.workflow.name) named.push(document);
     }
-    expect("workflow.validate", found, true);
+    if (named.length === 0) {
+      record("workflow.validate", "present", "absent");
+    } else {
+      expect(
+        "workflow.validate.pull_request",
+        named.some((document) => triggerNames(document.on).includes("pull_request")),
+        true,
+      );
+      expect(
+        "workflow.validate.check_name",
+        named.some((document) => checkNames(document.jobs).includes(BASELINE.workflow.name)),
+        true,
+      );
+    }
   }
 
   // The repository-level settings come from GraphQL. The REST repository object
@@ -326,6 +380,22 @@ async function checkRepository(org: string, repository: string, auth: string): P
       for (const [setting, expected] of Object.entries(BASELINE.ruleset.pull_request)) {
         expect(`ruleset.pull_request.${setting}`, pullRequest[setting], expected);
       }
+    }
+    const statusChecks = (ruleset.rules ?? []).find((rule: Json) => rule.type === "required_status_checks")?.parameters;
+    if (!statusChecks) {
+      record("ruleset.rules.required_status_checks.parameters", "present", "absent");
+    } else {
+      const contexts = (statusChecks.required_status_checks ?? []).map((check: Json) => check.context);
+      expect(
+        "ruleset.required_status_checks.contexts",
+        contexts,
+        BASELINE.ruleset.required_status_checks.contexts,
+      );
+      expect(
+        "ruleset.required_status_checks.strict",
+        statusChecks.strict_required_status_checks_policy,
+        BASELINE.ruleset.required_status_checks.strict,
+      );
     }
   }
 
@@ -425,4 +495,4 @@ async function main(): Promise<void> {
   process.exit(results.some((result) => result.findings.length > 0) ? 1 : 0);
 }
 
-await main();
+if (import.meta.main) await main();
