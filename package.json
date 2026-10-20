@@ -3,7 +3,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "verify-settings": "bun run scripts/verify-settings.ts"
+    "verify-settings": "bun run scripts/verify-settings.ts",
+    "test": "bun test"
   },
   "devDependencies": {
     "@types/bun": "latest"
