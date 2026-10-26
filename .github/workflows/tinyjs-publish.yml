@@ -180,7 +180,7 @@ jobs:
         shell: pwsh
         run: |
           irm https://tinyjs.app/install.ps1 | iex
-          "$HOME\.tinyjs" | Out-File -FilePath $env:GITHUB_PATH -Append
+          "$env:LOCALAPPDATA\tinyjs" | Out-File -FilePath $env:GITHUB_PATH -Append
 
       - name: Build
         run: tinyjs build
