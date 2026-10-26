@@ -12,7 +12,7 @@ The Baseline ruleset refuses a push to the default branch and requires an approv
 2. It bumps `version` in `tinyjs.json`, pushes `release/v<version>`, opens the pull request and arms auto-merge.
 3. Approving the pull request merges it. The push is a commit whose message starts `release: v`, which starts the build.
 4. The build tags that commit `v<version>` and creates the release:
-   - `macos-arm64` and `macos-x86_64`: `Pereda.app` (the app's title) zipped per architecture.
+   - `macos-arm64` and `macos-x86_64`: `<title>.app` from `tinyjs.json`, zipped per architecture.
    - `windows-x86_64`: a zip of the build folder, holding `<name>.exe` and `launcher.exe`. A bare `.exe` does not run without the launcher.
    - `linux-x86_64`: a tar of the build folder.
 
