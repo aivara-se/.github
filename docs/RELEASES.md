@@ -17,7 +17,7 @@ The tag waits for the builds: a release nobody can rebuild from its tag is a cla
 
 - **One trigger, the push.** No `workflow_dispatch`: a person cannot publish by hand.
 - **Nothing else is written.** The run creates a tag, a release and a registry entry; it makes no commit and no pull request.
-- **Every step checks before it writes.** A version already tagged and released builds nothing, and a run that failed halfway is finished by the next push rather than by a new commit.
+- **Every step checks before it writes.** A version already tagged and released builds nothing. The next push finishes a run that failed before the release; a step after it is re-run from the Actions tab, which is not `workflow_dispatch`.
 - **The tag names the tree that was built.** A retry builds the tag when it exists, so one release cannot mix two commits.
 - **One run at a time.** `concurrency` with `cancel-in-progress: false` keeps two pushes from publishing one version twice.
 
