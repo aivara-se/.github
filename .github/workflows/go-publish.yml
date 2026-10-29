@@ -120,11 +120,11 @@ jobs:
           mkdir -p dist
           CGO_ENABLED=0 GOOS="$goos" GOARCH="$goarch" \
             go build -trimpath -buildvcs=false -o "dist/$asset" "$PACKAGE"
-          echo "ASSET=$asset" >> "$GITHUB_ENV"
+          echo "NAME=$goos-$goarch" >> "$GITHUB_ENV"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ replace(matrix.target, '/', '-') }}
+          name: ${{ env.NAME }}
           path: dist/*
           if-no-files-found: error
 
