@@ -1,103 +1,83 @@
 name: tinyjs publish
 
-# The organisation's optional release workflow for a tinyjs desktop app.
+# The organisation's optional release workflow for a tinyjs desktop app, called
+# from the app's own repository on a push to its default branch.
 #
-# It is called from the app's own repository. `workflow_dispatch` bumps the
-# version in tinyjs.json, opens a release pull request and arms auto-merge; the
-# default branch's ruleset still needs its approving review. When that pull
-# request merges, the release job tags the merge commit, builds macOS (arm64 and
-# x86_64), Windows and Linux, and creates the GitHub release.
+# It reads the version from tinyjs.json and builds all three platforms. When the
+# builds succeed it tags the pushed commit (unless the tag exists) and creates
+# the GitHub release with the archives (unless the release exists). A version
+# that is already tagged and released is not built again.
 #
-# The caller owns the trigger, the permissions and the secrets; see
-# docs/RELEASES.md. A repository that does not call it is unaffected.
+# It never bumps the version, opens a pull request or pushes a commit, and it
+# has no workflow_dispatch: the caller's push is the only trigger. The caller
+# owns the permissions and the secrets; see docs/RELEASES.md.
 
 on:
   workflow_call:
-    inputs:
-      bump:
-        description: Which part of the version to bump
-        type: string
-        required: false
-        default: patch
 
 permissions:
   contents: write
-  pull-requests: write
 
 concurrency:
   group: publish-${{ github.repository }}
   cancel-in-progress: false
 
 jobs:
-  prepare:
-    if: github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          ref: main
-          fetch-depth: 0
-          token: ${{ secrets.RELEASE_TOKEN || github.token }}
-
-      - name: Bump the version in tinyjs.json
-        id: version
-        run: |
-          set -euo pipefail
-          current=$(jq -r .version tinyjs.json)
-          IFS=. read -r major minor patch <<< "$current"
-          case "${{ inputs.bump }}" in
-            major) major=$((major + 1)); minor=0; patch=0 ;;
-            minor) minor=$((minor + 1)); patch=0 ;;
-            *) patch=$((patch + 1)) ;;
-          esac
-          next="$major.$minor.$patch"
-          jq --arg version "$next" '.version = $version' tinyjs.json > tinyjs.json.tmp
-          mv tinyjs.json.tmp tinyjs.json
-          echo "value=$next" >> "$GITHUB_OUTPUT"
-
-      - name: Open the release pull request
-        env:
-          GH_TOKEN: ${{ secrets.RELEASE_TOKEN || github.token }}
-          VERSION: ${{ steps.version.outputs.value }}
-        run: |
-          set -euo pipefail
-          branch="release/v$VERSION"
-          body="Bump the app to v$VERSION. Merging this pull request tags the commit and publishes the release."
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git switch -c "$branch"
-          git add tinyjs.json
-          git commit -m "release: v$VERSION"
-          git push --force -u origin "$branch"
-          if gh pr view "$branch" > /dev/null 2>&1; then
-            gh pr edit "$branch" --title "release: v$VERSION" --body "$body"
-          else
-            gh pr create --base main --head "$branch" --title "release: v$VERSION" --body "$body"
-          fi
-          gh pr merge "$branch" --auto --rebase
-
   meta:
-    if: "github.event_name == 'push' && startsWith(github.event.head_commit.message, 'release: v')"
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
       version: ${{ steps.read.outputs.version }}
       tag: ${{ steps.read.outputs.tag }}
       title: ${{ steps.read.outputs.title }}
+      build: ${{ steps.read.outputs.build }}
+      ref: ${{ steps.read.outputs.ref }}
     steps:
       - uses: actions/checkout@v7
-      - name: Read the version
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_TOKEN || github.token }}
+
+      - name: Read the version, the tag and the release
         id: read
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN || github.token }}
         run: |
-          version=$(jq -r .version tinyjs.json)
-          title=$(jq -r .title tinyjs.json)
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "tag=v$version" >> "$GITHUB_OUTPUT"
-          echo "title=$title" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          version=$(jq -r '.version // empty' tinyjs.json)
+          if ! printf '%s' "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+([-+][0-9A-Za-z.-]+)?$'; then
+            echo "tinyjs.json carries no version: '$version'" >&2
+            exit 1
+          fi
+          title=$(jq -r '.title // .name' tinyjs.json)
+          tag="v$version"
+          git fetch --tags --force --quiet
+          ref="$GITHUB_SHA"
+          tagged=false
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+            tagged=true
+            ref="$tag"
+          fi
+          released=false
+          if gh release view "$tag" >/dev/null 2>&1; then
+            released=true
+          fi
+          build=true
+          if [ "$tagged" = true ] && [ "$released" = true ]; then
+            build=false
+            echo "$tag is already tagged and released; nothing to publish"
+          fi
+          {
+            echo "version=$version"
+            echo "tag=$tag"
+            echo "title=$title"
+            echo "build=$build"
+            echo "ref=$ref"
+          } >> "$GITHUB_OUTPUT"
 
   macos:
     needs: meta
+    if: needs.meta.outputs.build == 'true'
     runs-on: macos-15
     timeout-minutes: 45
     strategy:
@@ -117,6 +97,8 @@ jobs:
       MACOS_APP_PASSWORD: ${{ secrets.MACOS_APP_PASSWORD }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.meta.outputs.ref }}
 
       - name: Install tinyjs
         run: |
@@ -171,10 +153,13 @@ jobs:
 
   windows:
     needs: meta
+    if: needs.meta.outputs.build == 'true'
     runs-on: windows-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.meta.outputs.ref }}
 
       - name: Install tinyjs
         shell: pwsh
@@ -202,10 +187,13 @@ jobs:
 
   linux:
     needs: meta
+    if: needs.meta.outputs.build == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.meta.outputs.ref }}
 
       - name: Install tinyjs
         run: |
@@ -233,11 +221,13 @@ jobs:
 
   release:
     needs: [meta, macos, windows, linux]
+    if: needs.meta.outputs.build == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
         with:
+          ref: ${{ needs.meta.outputs.ref }}
           fetch-depth: 0
           token: ${{ secrets.RELEASE_TOKEN || github.token }}
 
@@ -254,13 +244,13 @@ jobs:
         run: |
           set -euo pipefail
           git fetch --tags --force
-          if git rev-parse "$TAG" > /dev/null 2>&1; then
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
             echo "tag $TAG already exists"
           else
             git tag "$TAG" "$GITHUB_SHA"
             git push origin "$TAG"
           fi
-          if gh release view "$TAG" > /dev/null 2>&1; then
+          if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" artifacts/* --clobber
           else
             gh release create "$TAG" --verify-tag \
