@@ -47,7 +47,13 @@ const BASELINE = {
     enforcement: "active",
     conditions: { ref_name: { include: ["~DEFAULT_BRANCH"], exclude: [] } },
     bypass_actors: 0,
-    required_rules: ["deletion", "non_fast_forward", "required_linear_history", "pull_request", "required_status_checks"],
+    required_rules: [
+      "deletion",
+      "non_fast_forward",
+      "required_linear_history",
+      "pull_request",
+      "required_status_checks",
+    ],
     forbidden_rules: [],
     pull_request: {
       required_approving_review_count: 1,
@@ -133,16 +139,18 @@ interface Options {
 }
 
 function usage(): never {
-  console.error([
-    `usage: bun run verify-settings [--org NAME] [--repo NAME]... [--json]`,
-    ``,
-    `  --org NAME    organisation to check (default aivara-se)`,
-    `  --repo NAME   check one repository, repeatable (default: every repository)`,
-    `  --json        print findings as JSON`,
-    ``,
-    `Reads a token from GH_TOKEN or GITHUB_TOKEN; it must read repository`,
-    `administration across the organisation.`,
-  ].join("\n"));
+  console.error(
+    [
+      `usage: bun run verify-settings [--org NAME] [--repo NAME]... [--json]`,
+      ``,
+      `  --org NAME    organisation to check (default aivara-se)`,
+      `  --repo NAME   check one repository, repeatable (default: every repository)`,
+      `  --json        print findings as JSON`,
+      ``,
+      `Reads a token from GH_TOKEN or GITHUB_TOKEN; it must read repository`,
+      `administration across the organisation.`,
+    ].join("\n"),
+  );
   process.exit(2);
 }
 
@@ -153,28 +161,38 @@ function parseArguments(argv: string[]): Options {
     if (argument === "--help" || argument === "-h") usage();
     else if (argument === "--json") options.json = true;
     else if (argument === "--org") options.org = argv[++index] ?? "";
-    else if (argument === "--repo") options.repositories.push(argv[++index] ?? "");
+    else if (argument === "--repo")
+      options.repositories.push(argv[++index] ?? "");
     else usage();
   }
-  if (options.repositories.some((name) => name.length === 0) || options.org.length === 0) usage();
+  if (
+    options.repositories.some((name) => name.length === 0) ||
+    options.org.length === 0
+  )
+    usage();
   return options;
 }
 
 function token(): string {
   const value = process.env.GH_TOKEN ?? process.env.GITHUB_TOKEN;
   if (!value) {
-    console.error([
-      `verify-settings needs a token that reads repository administration across ${"the organisation"}.`,
-      ``,
-      `  locally   GH_TOKEN=$(gh auth token) bun run verify-settings`,
-      `  in CI     set the ORG_READ_TOKEN repository secret`,
-    ].join("\n"));
+    console.error(
+      [
+        `verify-settings needs a token that reads repository administration across ${"the organisation"}.`,
+        ``,
+        `  locally   GH_TOKEN=$(gh auth token) bun run verify-settings`,
+        `  in CI     set the ORG_READ_TOKEN repository secret`,
+      ].join("\n"),
+    );
     process.exit(2);
   }
   return value;
 }
 
-async function request(path: string, auth: string): Promise<{ status: number; body: any }> {
+async function request(
+  path: string,
+  auth: string,
+): Promise<{ status: number; body: any }> {
   const response = await fetch(`${API}${path}`, {
     headers: {
       authorization: `Bearer ${auth}`,
@@ -193,7 +211,11 @@ async function request(path: string, auth: string): Promise<{ status: number; bo
   return { status: response.status, body };
 }
 
-async function graphql(query: string, variables: Json, auth: string): Promise<any> {
+async function graphql(
+  query: string,
+  variables: Json,
+  auth: string,
+): Promise<any> {
   const response = await fetch(`${API}/graphql`, {
     method: "POST",
     headers: {
@@ -210,9 +232,14 @@ async function graphql(query: string, variables: Json, auth: string): Promise<an
 async function repositoriesOf(org: string, auth: string): Promise<string[]> {
   const names: string[] = [];
   for (let page = 1; ; page += 1) {
-    const { status, body } = await request(`/orgs/${org}/repos?per_page=100&page=${page}`, auth);
+    const { status, body } = await request(
+      `/orgs/${org}/repos?per_page=100&page=${page}`,
+      auth,
+    );
     if (status !== 200 || !Array.isArray(body)) {
-      console.error(`cannot list the repositories of ${org}: HTTP ${status} ${JSON.stringify(body)}`);
+      console.error(
+        `cannot list the repositories of ${org}: HTTP ${status} ${JSON.stringify(body)}`,
+      );
       process.exit(2);
     }
     names.push(...body.map((repository: Json) => repository.name as string));
@@ -221,16 +248,23 @@ async function repositoriesOf(org: string, auth: string): Promise<string[]> {
 }
 
 /** Runs the repositories through a small pool so the check finishes in seconds. */
-async function pooled<T, R>(items: T[], limit: number, run: (item: T) => Promise<R>): Promise<R[]> {
+async function pooled<T, R>(
+  items: T[],
+  limit: number,
+  run: (item: T) => Promise<R>,
+): Promise<R[]> {
   const results = new Array<R>(items.length);
   let next = 0;
-  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
-    while (next < items.length) {
-      const index = next;
-      next += 1;
-      results[index] = await run(items[index] as T);
-    }
-  });
+  const workers = Array.from(
+    { length: Math.min(limit, items.length) },
+    async () => {
+      while (next < items.length) {
+        const index = next;
+        next += 1;
+        results[index] = await run(items[index] as T);
+      }
+    },
+  );
   await Promise.all(workers);
   return results;
 }
@@ -245,7 +279,9 @@ function canonical(value: unknown): string {
     return `[${value.map(canonical).sort().join(",")}]`;
   }
   if (value !== null && typeof value === "object") {
-    const entries = Object.entries(value as Json).sort(([left], [right]) => left.localeCompare(right));
+    const entries = Object.entries(value as Json).sort(([left], [right]) =>
+      left.localeCompare(right),
+    );
     return `{${entries.map(([key, item]) => `${JSON.stringify(key)}:${canonical(item)}`).join(",")}}`;
   }
   return JSON.stringify(value);
@@ -257,7 +293,8 @@ function canonical(value: unknown): string {
  */
 export function triggerNames(on: unknown): string[] {
   if (typeof on === "string") return [on];
-  if (Array.isArray(on)) return on.filter((name): name is string => typeof name === "string");
+  if (Array.isArray(on))
+    return on.filter((name): name is string => typeof name === "string");
   if (on !== null && typeof on === "object") return Object.keys(on as Json);
   return [];
 }
@@ -280,22 +317,48 @@ export function checkNames(jobs: unknown): string[] {
  * requests and one of them to report a check named `validate`. Two files may carry
  * the name, so each predicate looks at any of them rather than at all of them.
  */
-export function validateGate(documents: Json[]): { named: boolean; pullRequest: boolean; checkName: boolean } {
+export function validateGate(documents: Json[]): {
+  named: boolean;
+  pullRequest: boolean;
+  checkName: boolean;
+} {
   const named = documents.filter((document) => document.name === "validate");
   return {
     named: named.length > 0,
-    pullRequest: named.some((document) => triggerNames(document.on).includes("pull_request")),
-    checkName: named.some((document) => checkNames(document.jobs).includes("validate")),
+    pullRequest: named.some((document) =>
+      triggerNames(document.on).includes("pull_request"),
+    ),
+    checkName: named.some((document) =>
+      checkNames(document.jobs).includes("validate"),
+    ),
   };
 }
 
-async function checkRepository(org: string, repository: string, auth: string): Promise<Result> {
+async function checkRepository(
+  org: string,
+  repository: string,
+  auth: string,
+): Promise<Result> {
   const findings: Finding[] = [];
-  const record = (setting: string, expected: unknown, actual: unknown): void => {
-    findings.push({ repository, setting, expected: canonical(expected), actual: canonical(actual) });
+  const record = (
+    setting: string,
+    expected: unknown,
+    actual: unknown,
+  ): void => {
+    findings.push({
+      repository,
+      setting,
+      expected: canonical(expected),
+      actual: canonical(actual),
+    });
   };
-  const expect = (setting: string, actual: unknown, expected: unknown): void => {
-    if (canonical(actual) !== canonical(expected)) record(setting, expected, actual);
+  const expect = (
+    setting: string,
+    actual: unknown,
+    expected: unknown,
+  ): void => {
+    if (canonical(actual) !== canonical(expected))
+      record(setting, expected, actual);
   };
 
   const repo = await request(`/repos/${org}/${repository}`, auth);
@@ -310,7 +373,10 @@ async function checkRepository(org: string, repository: string, auth: string): P
   // anything else satisfies a name check and never satisfies the rule. The actions
   // list returns workflows registered on any branch, so read the default branch's
   // files and the names each one declares.
-  const branch = typeof repo.body.default_branch === "string" ? repo.body.default_branch : "";
+  const branch =
+    typeof repo.body.default_branch === "string"
+      ? repo.body.default_branch
+      : "";
   const workflows = await request(
     `/repos/${org}/${repository}/contents/.github/workflows?ref=${encodeURIComponent(branch)}`,
     auth,
@@ -323,8 +389,12 @@ async function checkRepository(org: string, repository: string, auth: string): P
     const documents: Json[] = [];
     for (const entry of workflows.body as Json[]) {
       if (entry.type !== "file" || !/\.ya?ml$/.test(entry.name)) continue;
-      const blob = await request(`/repos/${org}/${repository}/git/blobs/${entry.sha}`, auth);
-      if (blob.status !== 200 || typeof blob.body.content !== "string") continue;
+      const blob = await request(
+        `/repos/${org}/${repository}/git/blobs/${entry.sha}`,
+        auth,
+      );
+      if (blob.status !== 200 || typeof blob.body.content !== "string")
+        continue;
       const text = Buffer.from(blob.body.content, "base64").toString("utf8");
       let document: Json | null = null;
       try {
@@ -352,48 +422,101 @@ async function checkRepository(org: string, repository: string, auth: string): P
   // The repository-level settings come from GraphQL. The REST repository object
   // omits them for a fine-grained token that holds administration read, and the
   // two APIs name every one of these fields differently.
-  const answer = await graphql(REPOSITORY_SETTINGS_QUERY, { owner: org, name: repository }, auth);
+  const answer = await graphql(
+    REPOSITORY_SETTINGS_QUERY,
+    { owner: org, name: repository },
+    auth,
+  );
   const node = answer.data?.repository;
   if (!node) {
-    record("repository is readable", "readable", answer.errors?.[0]?.message ?? "no repository returned");
+    record(
+      "repository is readable",
+      "readable",
+      answer.errors?.[0]?.message ?? "no repository returned",
+    );
   } else {
     for (const [field, setting] of Object.entries(REPOSITORY_SETTINGS)) {
-      expect(`repository.${setting}`, node[field], (BASELINE.repository as Json)[setting]);
+      expect(
+        `repository.${setting}`,
+        node[field],
+        (BASELINE.repository as Json)[setting],
+      );
     }
   }
 
   const listed = await request(`/repos/${org}/${repository}/rulesets`, auth);
   const summary = Array.isArray(listed.body)
-    ? listed.body.find((ruleset: Json) => ruleset.name === BASELINE.ruleset.name)
+    ? listed.body.find(
+        (ruleset: Json) => ruleset.name === BASELINE.ruleset.name,
+      )
     : undefined;
   if (!summary) {
-    record(`ruleset.${BASELINE.ruleset.name}`, "present", `absent or unreadable (HTTP ${listed.status})`);
+    record(
+      `ruleset.${BASELINE.ruleset.name}`,
+      "present",
+      `absent or unreadable (HTTP ${listed.status})`,
+    );
   } else {
-    const { body: ruleset } = await request(`/repos/${org}/${repository}/rulesets/${summary.id}`, auth);
-    expect("ruleset.enforcement", ruleset.enforcement, BASELINE.ruleset.enforcement);
+    const { body: ruleset } = await request(
+      `/repos/${org}/${repository}/rulesets/${summary.id}`,
+      auth,
+    );
+    expect(
+      "ruleset.enforcement",
+      ruleset.enforcement,
+      BASELINE.ruleset.enforcement,
+    );
     expect("ruleset.target", ruleset.target, BASELINE.ruleset.target);
-    expect("ruleset.conditions", ruleset.conditions, BASELINE.ruleset.conditions);
-    expect("ruleset.bypass_actors", (ruleset.bypass_actors ?? []).length, BASELINE.ruleset.bypass_actors);
-    const types: string[] = (ruleset.rules ?? []).map((rule: Json) => rule.type);
+    expect(
+      "ruleset.conditions",
+      ruleset.conditions,
+      BASELINE.ruleset.conditions,
+    );
+    expect(
+      "ruleset.bypass_actors",
+      (ruleset.bypass_actors ?? []).length,
+      BASELINE.ruleset.bypass_actors,
+    );
+    const types: string[] = (ruleset.rules ?? []).map(
+      (rule: Json) => rule.type,
+    );
     for (const required of BASELINE.ruleset.required_rules) {
-      if (!types.includes(required)) record(`ruleset.rules.${required}`, "present", "absent");
+      if (!types.includes(required))
+        record(`ruleset.rules.${required}`, "present", "absent");
     }
     for (const forbidden of BASELINE.ruleset.forbidden_rules) {
-      if (types.includes(forbidden)) record(`ruleset.rules.${forbidden}`, "absent", "present");
+      if (types.includes(forbidden))
+        record(`ruleset.rules.${forbidden}`, "absent", "present");
     }
-    const pullRequest = (ruleset.rules ?? []).find((rule: Json) => rule.type === "pull_request")?.parameters;
+    const pullRequest = (ruleset.rules ?? []).find(
+      (rule: Json) => rule.type === "pull_request",
+    )?.parameters;
     if (!pullRequest) {
       record("ruleset.rules.pull_request.parameters", "present", "absent");
     } else {
-      for (const [setting, expected] of Object.entries(BASELINE.ruleset.pull_request)) {
-        expect(`ruleset.pull_request.${setting}`, pullRequest[setting], expected);
+      for (const [setting, expected] of Object.entries(
+        BASELINE.ruleset.pull_request,
+      )) {
+        expect(
+          `ruleset.pull_request.${setting}`,
+          pullRequest[setting],
+          expected,
+        );
       }
     }
-    const statusChecks = (ruleset.rules ?? []).find((rule: Json) => rule.type === "required_status_checks")?.parameters;
+    const statusChecks = (ruleset.rules ?? []).find(
+      (rule: Json) => rule.type === "required_status_checks",
+    )?.parameters;
     if (!statusChecks) {
-      record("ruleset.rules.required_status_checks.parameters", "present", "absent");
+      record(
+        "ruleset.rules.required_status_checks.parameters",
+        "present",
+        "absent",
+      );
     } else {
-      const contexts = (statusChecks.required_status_checks ?? []).map((check: Json) => check.context);
+      const contexts = (statusChecks.required_status_checks ?? []).map(
+        (check: Json) => check.context,
+      );
       expect(
         "ruleset.required_status_checks.contexts",
         contexts,
@@ -407,37 +530,70 @@ async function checkRepository(org: string, repository: string, auth: string): P
     }
   }
 
-  const permissions = await request(`/repos/${org}/${repository}/actions/permissions`, auth);
+  const permissions = await request(
+    `/repos/${org}/${repository}/actions/permissions`,
+    auth,
+  );
   if (permissions.status !== 200) {
     record("actions.permissions", "HTTP 200", `HTTP ${permissions.status}`);
   } else {
-    expect("actions.enabled", permissions.body.enabled, BASELINE.actions.enabled);
-    expect("actions.allowed_actions", permissions.body.allowed_actions, BASELINE.actions.allowed_actions);
+    expect(
+      "actions.enabled",
+      permissions.body.enabled,
+      BASELINE.actions.enabled,
+    );
+    expect(
+      "actions.allowed_actions",
+      permissions.body.allowed_actions,
+      BASELINE.actions.allowed_actions,
+    );
   }
 
-  const selected = await request(`/repos/${org}/${repository}/actions/permissions/selected-actions`, auth);
+  const selected = await request(
+    `/repos/${org}/${repository}/actions/permissions/selected-actions`,
+    auth,
+  );
   if (selected.status !== 200) {
     record("actions.selected_actions", "HTTP 200", `HTTP ${selected.status}`);
   } else {
-    for (const [setting, expected] of Object.entries(BASELINE.actions.selected_actions)) {
-      expect(`actions.selected_actions.${setting}`, selected.body[setting], expected);
+    for (const [setting, expected] of Object.entries(
+      BASELINE.actions.selected_actions,
+    )) {
+      expect(
+        `actions.selected_actions.${setting}`,
+        selected.body[setting],
+        expected,
+      );
     }
   }
 
-  const workflow = await request(`/repos/${org}/${repository}/actions/permissions/workflow`, auth);
+  const workflow = await request(
+    `/repos/${org}/${repository}/actions/permissions/workflow`,
+    auth,
+  );
   if (workflow.status !== 200) {
     record("actions.workflow", "HTTP 200", `HTTP ${workflow.status}`);
   } else {
-    for (const [setting, expected] of Object.entries(BASELINE.actions.workflow)) {
+    for (const [setting, expected] of Object.entries(
+      BASELINE.actions.workflow,
+    )) {
       expect(`actions.workflow.${setting}`, workflow.body[setting], expected);
     }
   }
 
   const analysis = repo.body.security_and_analysis;
   if (!analysis) {
-    record("repository.security_and_analysis", "returned", "missing: the token lacks administration read");
+    record(
+      "repository.security_and_analysis",
+      "returned",
+      "missing: the token lacks administration read",
+    );
   } else {
-    expect("security.secret_scanning", analysis.secret_scanning?.status, BASELINE.security.secret_scanning);
+    expect(
+      "security.secret_scanning",
+      analysis.secret_scanning?.status,
+      BASELINE.security.secret_scanning,
+    );
     expect(
       "security.secret_scanning_push_protection",
       analysis.secret_scanning_push_protection?.status,
@@ -451,15 +607,37 @@ async function checkRepository(org: string, repository: string, auth: string): P
   }
 
   // 204 with alerts on, 404 with them off.
-  const alerts = await request(`/repos/${org}/${repository}/vulnerability-alerts`, auth);
-  expect("security.dependabot_alerts", alerts.status === 204, BASELINE.security.dependabot_alerts);
+  const alerts = await request(
+    `/repos/${org}/${repository}/vulnerability-alerts`,
+    auth,
+  );
+  expect(
+    "security.dependabot_alerts",
+    alerts.status === 204,
+    BASELINE.security.dependabot_alerts,
+  );
 
-  const fixes = await request(`/repos/${org}/${repository}/automated-security-fixes`, auth);
+  const fixes = await request(
+    `/repos/${org}/${repository}/automated-security-fixes`,
+    auth,
+  );
   if (fixes.status !== 200) {
-    record("security.automated_security_fixes", "HTTP 200", `HTTP ${fixes.status}`);
+    record(
+      "security.automated_security_fixes",
+      "HTTP 200",
+      `HTTP ${fixes.status}`,
+    );
   } else {
-    expect("security.automated_security_fixes.enabled", fixes.body.enabled, BASELINE.security.automated_security_fixes);
-    expect("security.automated_security_fixes.paused", fixes.body.paused, false);
+    expect(
+      "security.automated_security_fixes.enabled",
+      fixes.body.enabled,
+      BASELINE.security.automated_security_fixes,
+    );
+    expect(
+      "security.automated_security_fixes.paused",
+      fixes.body.paused,
+      false,
+    );
   }
 
   return { repository, findings };
@@ -467,15 +645,21 @@ async function checkRepository(org: string, repository: string, auth: string): P
 
 function printText(results: Result[], org: string): void {
   const findings = results.flatMap((result) => result.findings);
-  console.log(`verify-settings: ${results.length} repositories in ${org}, checked against ${DOCUMENT}\n`);
+  console.log(
+    `verify-settings: ${results.length} repositories in ${org}, checked against ${DOCUMENT}\n`,
+  );
   for (const result of results) {
     if (result.findings.length === 0) {
       console.log(`${result.repository}  ok`);
       continue;
     }
-    console.log(`${result.repository}  ${result.findings.length} finding${result.findings.length === 1 ? "" : "s"}`);
+    console.log(
+      `${result.repository}  ${result.findings.length} finding${result.findings.length === 1 ? "" : "s"}`,
+    );
     for (const finding of result.findings) {
-      console.log(`  ${finding.setting}\n    expected ${finding.expected}\n    found    ${finding.actual}`);
+      console.log(
+        `  ${finding.setting}\n    expected ${finding.expected}\n    found    ${finding.actual}`,
+      );
     }
   }
   const total = results.length;
@@ -489,14 +673,23 @@ function printText(results: Result[], org: string): void {
 async function main(): Promise<void> {
   const options = parseArguments(Bun.argv.slice(2));
   const auth = token();
-  const repositories = options.repositories.length > 0
-    ? options.repositories
-    : await repositoriesOf(options.org, auth);
+  const repositories =
+    options.repositories.length > 0
+      ? options.repositories
+      : await repositoriesOf(options.org, auth);
 
-  const results = await pooled(repositories, 4, (repository) => checkRepository(options.org, repository, auth));
+  const results = await pooled(repositories, 4, (repository) =>
+    checkRepository(options.org, repository, auth),
+  );
 
   if (options.json) {
-    console.log(JSON.stringify({ org: options.org, document: DOCUMENT, results }, null, 2));
+    console.log(
+      JSON.stringify(
+        { org: options.org, document: DOCUMENT, results },
+        null,
+        2,
+      ),
+    );
   } else {
     printText(results, options.org);
   }

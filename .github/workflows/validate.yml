@@ -22,6 +22,8 @@ jobs:
           bun-version: 1.4.2
       - name: Install
         run: bun install --frozen-lockfile
+      - name: Format
+        run: bun x prettier@3.9.10 --check .
       - name: Type check
         run: bun x tsc --noEmit
       - name: Test
