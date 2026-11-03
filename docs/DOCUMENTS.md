@@ -27,59 +27,52 @@ The document states the goal and the boundary. An agent reads it to learn what i
 
 | Section | Cap | It holds |
 | --- | --- | --- |
-| `## Problem` | 70 | The person, the cost, and why now. No solution. |
-| `## What it is` | 80 | One paragraph: what it is, and who uses it and who runs it. |
-| `## Scope` | 180 | Three lists: `In`, `Out`, `Never`. The first two are this version's; `Never` is permanent. |
-| `## Behaviour` | 380 | The rules a person can see. One rule per bullet, 25 words or fewer. |
-| `## Autonomy` | 75 | What an agent decides alone, and what needs a decision. |
-| `## Vision` | 60 | What this becomes, and what must not change on the way. |
-| `## Acceptance` | 85 | At most eight outcomes, each checkable by someone else. |
-| `## Versions` | 60 | Shipped versions, one line each, then candidates. Not commitments. |
+| `## Problem` | 110 | The person, the cost, and why now. The last paragraph says what the product is. |
+| `## Scope` | 140 | Three lists: `In`, `Not this version`, `Never`. |
+| `## Behaviour` | 310 | The rules a person can see. One rule per bullet, 25 words or fewer. |
+| `## Autonomy` | 65 | What an agent decides alone, and what needs a decision. |
+| `## Vision` | 45 | What this becomes, and what must not change on the way. |
+| `## Acceptance` | 65 | At most eight outcomes, each checkable by someone else. |
+| `## Versions` | 45 | Shipped versions, one line each, then candidates. Not commitments. |
 
-Total: 990 words.
+Total: 780 words.
 
 Rules:
 
-- `## Problem` names the pain, not the feature. If the product is the answer, the question is missing.
-- `## Scope` holds the whole boundary in one place: `In` and `Out` for this version, `Never` for every version. An agent reads this section to learn what it may change.
+- `## Problem` names the pain, not the feature. Its last paragraph says what the product is, and who uses it and who runs it. If the product is the answer, the question is missing.
+- `## Scope` gives each list its lifetime. `In` is this version's work. `Not this version` is deferred and may return. `Never` is refused in every version. An agent reads this one section to learn what it may change.
 - `## Behaviour` holds rules, not mechanisms. A rule that needs a mechanism sends the reader to `SYSTEMS.md`.
 - `## Autonomy` names what an agent decides alone: anything these two documents do not fix, inside the scope. It names what needs a decision first: a new dependency, a change to the data model, a change to an external interface, or anything `Never` forbids.
 - A rule the work needs and the document lacks is written here in the same pull request. The budget decides whether it stays.
-- `## Acceptance` is outcomes, not tests. The suite owns the per-flow checks, and eight items keep this list a promise rather than a backlog.
+- `## Acceptance` is the proof: eight outcomes at most, each checkable by someone else. This list is enough; no other document repeats it.
 - `## Versions` carries no more than three shipped lines. Older history is `CHANGELOG.md`'s and the releases'.
 
 ## SYSTEMS.md
 
-The map of the shape. It cites the ADRs and never copies them.
+The system document is the shape of the running thing, in five parts.
 
 | Section | Cap | It holds |
 | --- | --- | --- |
-| `## Shape` | 70 | One paragraph: the components and how they meet. |
 | `## Components` | 130 | One line each: name, responsibility, interface. |
-| `## Data` | 140 | Entities, identity, relations, invariants. No columns, no types, no indexes. |
-| `## Interfaces` | 110 | Each boundary: direction, contract, and how it fails. |
-| `## Dependencies` | 60 | What it needs, why, and the decision that fixed it. |
-| `## Failure modes` | 120 | One line per failure a person can meet, and what happens. |
-| `## Planned, not built` | 70 | Decided mechanisms that are not in the tree. |
-| `## Layout` | 50 | The paths a reader needs. No obvious plumbing. |
-| `## Decisions` | 70 | Only the ADRs the shape depends on, one line each. |
-| `## Checks` | 60 | The commands. |
+| `## Data` | 125 | Entities, identity, relations, invariants. No columns, types or indexes. |
+| `## Interfaces` | 100 | Each boundary: direction, contract, how it fails. |
+| `## Dependencies` | 45 | What it needs and why. One line each. |
+| `## Failure modes` | 90 | One line per failure a person can meet, and what happens. |
 
-Total: 880 words.
+Total: 490 words.
 
 Rules:
 
 - A component is a responsibility with an interface, not a package.
 - `## Data` is the model, not the schema: "one row per day, keyed by the local date" is data; a column list is implementation.
 - `## Interfaces` states the contract, not the transport.
-- `## Decisions` lists the load-bearing ADRs. The link carries the reason and the cost.
-- No config keys, no DDL, no file-by-file functions, no command outside `## Checks`.
+- No config keys, no DDL, no file-by-file functions, no test, plan or decision.
 
 ## Enforcement
 
 `scripts/check-docs.ts` runs from `.github/workflows/docs.yml`, which a repository calls as one job in `validate`.
 
-It fails on a heading that is missing, unknown or out of order; a section or a document over its cap; a section with no text; a relative link that does not resolve; and twelve words repeated across the two documents. The message carries the number: `PRODUCT.md § Behaviour: 512 words, cap 400`.
+It fails on a heading that is missing, unknown or out of order; a section or a document over its cap; a section with no text; a relative link that does not resolve; and twelve words repeated across the two documents. The message carries the number: `PRODUCT.md § Behaviour: 412 words, cap 310`.
 
 The check is advisory until the repository is under budget. Then its job name joins the ruleset's required list.
 
@@ -96,11 +89,11 @@ Rejected:
 One docs-only pull request per repository:
 
 1. This repository and `aivara-se/.template`: this document, the checker, the templates.
-2. `dispatch`: 3,974 to 990. The pilot.
-3. `pereda`: 1,411 to 990.
-4. `.website`: 1,370 to 990, and its missing `SYSTEMS.md`.
+2. `dispatch`: 3,974 to 780. The pilot.
+3. `pereda`: 1,411 to 780.
+4. `.website`: 1,370 to 780, and its missing `SYSTEMS.md`.
 
-The worst file goes first: 72 percent of a wake's reading, and the checker's first red run.
+The worst file goes first: 81 percent of a wake's reading, and the checker's first red run.
 
 A word that leaves a document moves to an ADR, an issue, a test or `CHANGELOG.md`. It is not deleted.
 
