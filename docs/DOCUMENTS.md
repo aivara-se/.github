@@ -27,28 +27,26 @@ The document states the goal and the boundary. An agent reads it to learn what i
 
 | Section | Cap | It holds |
 | --- | --- | --- |
-| `## Problem` | 60 | The person, the cost, and why now. No solution. |
-| `## Users` | 50 | Who uses it and who runs it, in bullets. |
-| `## What it is` | 60 | One paragraph a stranger can repeat after one read. |
-| `## Scope this version` | 120 | `In` and `Out`, two lists. Out is a promise, not a backlog. |
-| `## Behaviour` | 400 | The rules a person can see. One rule per bullet, 25 words or fewer. |
-| `## Never` | 100 | Constraints the product holds in every version. |
-| `## Autonomy` | 80 | What an agent decides alone, and what needs a decision. |
-| `## Vision` | 80 | What this becomes, and what must not change on the way. |
-| `## Acceptance` | 120 | At most ten outcomes, each checkable by someone else. |
-| `## Roadmap` | 60 | Candidates, not commitments. One line each. |
-| `## Changelog` | 60 | The last three versions, one line each. Older lines live in `CHANGELOG.md`. |
+| `## Problem` | 70 | The person, the cost, and why now. No solution. |
+| `## What it is` | 80 | One paragraph: what it is, and who uses it and who runs it. |
+| `## Scope` | 180 | Three lists: `In`, `Out`, `Never`. The first two are this version's; `Never` is permanent. |
+| `## Behaviour` | 380 | The rules a person can see. One rule per bullet, 25 words or fewer. |
+| `## Autonomy` | 75 | What an agent decides alone, and what needs a decision. |
+| `## Vision` | 60 | What this becomes, and what must not change on the way. |
+| `## Acceptance` | 85 | At most eight outcomes, each checkable by someone else. |
+| `## Versions` | 60 | Shipped versions, one line each, then candidates. Not commitments. |
 
-Total: 1,200 words.
+Total: 990 words.
 
 Rules:
 
 - `## Problem` names the pain, not the feature. If the product is the answer, the question is missing.
+- `## Scope` holds the whole boundary in one place: `In` and `Out` for this version, `Never` for every version. An agent reads this section to learn what it may change.
 - `## Behaviour` holds rules, not mechanisms. A rule that needs a mechanism sends the reader to `SYSTEMS.md`.
-- `## Never` is a constraint, not a goal. "Never calls the network" is a constraint; "fast" is not.
-- `## Autonomy` names what an agent decides alone: anything these two documents do not fix, inside the scope. It names what needs a decision first: a new dependency, a change to the data model, a change to an external interface, or anything `## Never` forbids.
+- `## Autonomy` names what an agent decides alone: anything these two documents do not fix, inside the scope. It names what needs a decision first: a new dependency, a change to the data model, a change to an external interface, or anything `Never` forbids.
 - A rule the work needs and the document lacks is written here in the same pull request. The budget decides whether it stays.
-- `## Acceptance` is outcomes, not tests. The suite owns the per-flow checks.
+- `## Acceptance` is outcomes, not tests. The suite owns the per-flow checks, and eight items keep this list a promise rather than a backlog.
+- `## Versions` carries no more than three shipped lines. Older history is `CHANGELOG.md`'s and the releases'.
 
 ## SYSTEMS.md
 
@@ -98,11 +96,11 @@ Rejected:
 One docs-only pull request per repository:
 
 1. This repository and `aivara-se/.template`: this document, the checker, the templates.
-2. `dispatch`: 3,974 to 1,200. The pilot.
-3. `pereda`: 1,411 to 1,200.
-4. `.website`: 1,370 to 1,200, and its missing `SYSTEMS.md`.
+2. `dispatch`: 3,974 to 990. The pilot.
+3. `pereda`: 1,411 to 990.
+4. `.website`: 1,370 to 990, and its missing `SYSTEMS.md`.
 
-The worst file goes first: 69 percent of a wake's reading, and the checker's first red run.
+The worst file goes first: 72 percent of a wake's reading, and the checker's first red run.
 
 A word that leaves a document moves to an ADR, an issue, a test or `CHANGELOG.md`. It is not deleted.
 
