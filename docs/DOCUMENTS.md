@@ -33,9 +33,8 @@ The document states the goal and the boundary. An agent reads it to learn what i
 | `## Autonomy` | 65 | What an agent decides alone, and what needs a decision. |
 | `## Vision` | 45 | What this becomes, and what must not change on the way. |
 | `## Acceptance` | 65 | At most eight outcomes, each checkable by someone else. |
-| `## Versions` | 45 | Shipped versions, one line each, then candidates. Not commitments. |
 
-Total: 780 words.
+Total: 735 words.
 
 Rules:
 
@@ -45,27 +44,24 @@ Rules:
 - `## Autonomy` names what an agent decides alone: anything these two documents do not fix, inside the scope. It names what needs a decision first: a new dependency, a change to the data model, a change to an external interface, or anything `Never` forbids.
 - A rule the work needs and the document lacks is written here in the same pull request. The budget decides whether it stays.
 - `## Acceptance` is the proof: eight outcomes at most, each checkable by someone else. This list is enough; no other document repeats it.
-- `## Versions` carries no more than three shipped lines. Older history is `CHANGELOG.md`'s and the releases'.
+- The product document says nothing about versions. What shipped, and when, is the releases' record.
 
 ## SYSTEMS.md
 
-The system document is the shape of the running thing, in five parts.
+The system document is the shape of the running thing, in three parts.
 
 | Section | Cap | It holds |
 | --- | --- | --- |
-| `## Components` | 130 | One line each: name, responsibility, interface. |
-| `## Data` | 125 | Entities, identity, relations, invariants. No columns, types or indexes. |
-| `## Interfaces` | 100 | Each boundary: direction, contract, how it fails. |
+| `## Architecture` | 220 | The parts and what each is responsible for, the data they share, and the boundary each exposes. |
 | `## Dependencies` | 45 | What it needs and why. One line each. |
 | `## Failure modes` | 90 | One line per failure a person can meet, and what happens. |
 
-Total: 490 words.
+Total: 355 words.
 
 Rules:
 
-- A component is a responsibility with an interface, not a package.
-- `## Data` is the model, not the schema: "one row per day, keyed by the local date" is data; a column list is implementation.
-- `## Interfaces` states the contract, not the transport.
+- `## Architecture` stays above the code. A part is a responsibility with a boundary, not a package; the data is the model, not the schema; a boundary states its contract, not its transport.
+- "One row per day, keyed by the local date" is data; a column list is implementation.
 - No config keys, no DDL, no file-by-file functions, no test, plan or decision.
 
 ## Enforcement
@@ -89,13 +85,13 @@ Rejected:
 One docs-only pull request per repository:
 
 1. This repository and `aivara-se/.template`: this document, the checker, the templates.
-2. `dispatch`: 3,974 to 780. The pilot.
-3. `pereda`: 1,411 to 780.
-4. `.website`: 1,370 to 780, and its missing `SYSTEMS.md`.
+2. `dispatch`: 3,974 to 735. The pilot.
+3. `pereda`: 1,411 to 735.
+4. `.website`: 1,370 to 735, and its missing `SYSTEMS.md`.
 
 The worst file goes first: 81 percent of a wake's reading, and the checker's first red run.
 
-A word that leaves a document moves to an ADR, an issue, a test or `CHANGELOG.md`. It is not deleted.
+A word that leaves a document moves to an ADR, an issue, a test or a release. It is not deleted.
 
 ## What would kill it
 
