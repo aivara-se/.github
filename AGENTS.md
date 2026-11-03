@@ -17,6 +17,12 @@ One fact, one home. A rule that applies to one repository belongs in that reposi
 - A workflow default is a claim about every repository. Change it when the repositories can follow it, not before.
 - A comment beside a step says why the step exists. Delete the comment when the step goes.
 
+## Tooling
+
+- **Bun runs the scripts.** A script that runs commands is TypeScript, run with `bun run scripts/<name>.ts` — never Python, and a shell script only when it stays a few lines. A command typed at the prompt is not a script.
+- **Never** add a second package manager, lockfile, formatter or test runner. The toolchain is the one the repository already declares.
+- **Never** report "tests pass", "it builds" or "verified" without the command and the tree it ran against.
+
 ## Verify before pushing
 
 ```bash
