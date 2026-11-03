@@ -38,12 +38,14 @@ The same commands run in `.github/workflows/validate.yml`, whose job is named `v
 
 ## Version Control
 
-- **Branches**: lowercase, hyphens, one per task: `docs/`, `feat/`, `fix/` or `chore/` and a short name.
+- **Branches**: lowercase, hyphens, one per task: `docs/`, `feat/`, `fix/` or `chore/` and a short name — `docs/adopt-agents-config`, `fix-log-timezone`. No uppercase, no underscores, no personal prefixes.
 - **Commits**: Conventional Commits, lowercase, single line, no scopes — `type: short description`.
-- Never commit to `main` directly, and never force-push a branch someone else has seen.
+- **Never** commit to `main` directly, and **never** force-push a branch someone else has seen.
 - Keep history linear: no merge commits, no empty commits, no work-in-progress commits.
-- Remote work is a branch plus a pull request: the body says what changed, what was verified and how, and what was left out.
+- Commit under your own identity, never another agent's.
+- Remote work is a branch plus a pull request: the body says what changed, what was verified and how, and what was left out. Leave the tree clean.
+- Request review from the operator (`thani-sh`) alone on a documents-only change, and from one peer agent as well on an implementation one.
 
 ## Skills
 
-The organisation's skills live in `aivara-se/.agents/skills` and every agent reads them from there. Each declares a `when-to-use`: open the one that covers the work before starting it.
+The organisation's skills live in `aivara-se/.agents/skills` and every agent reads them from there; a repository carries no copy. Each declares a `when-to-use`: open the one that covers the work before starting it.
