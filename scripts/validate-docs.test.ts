@@ -83,7 +83,21 @@ describe("validate", () => {
     mkdirSync(join(dir, "docs"));
     writeFileSync(join(dir, "docs", "PRODUCT.md"), product());
     writeFileSync(join(dir, "docs", "SYSTEMS.md"), systems());
-    expect(validate(dir).errors).toEqual([]);
+    expect(validate(dir)).toEqual({
+      errors: [],
+      checked: ["PRODUCT.md", "SYSTEMS.md"],
+    });
+  });
+
+  test("the root wins when both layouts carry a copy", () => {
+    const dir = fixture(product(), systems());
+    mkdirSync(join(dir, "docs"));
+    writeFileSync(join(dir, "docs", "PRODUCT.md"), "not the standard");
+    writeFileSync(join(dir, "docs", "SYSTEMS.md"), "not the standard");
+    expect(validate(dir)).toEqual({
+      errors: [],
+      checked: ["PRODUCT.md", "SYSTEMS.md"],
+    });
   });
 
   test("a link under docs/ resolves beside the document", () => {
@@ -94,7 +108,10 @@ describe("validate", () => {
       product({ Scope: `${words(5, "scope")} [the system](SYSTEMS.md)` }),
     );
     writeFileSync(join(dir, "docs", "SYSTEMS.md"), systems());
-    expect(validate(dir).errors).toEqual([]);
+    expect(validate(dir)).toEqual({
+      errors: [],
+      checked: ["PRODUCT.md", "SYSTEMS.md"],
+    });
   });
 
   test("require fails a directory with no pair", () => {
