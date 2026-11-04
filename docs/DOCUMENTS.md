@@ -89,6 +89,8 @@ A word is a whitespace-separated token of prose, list text or table cell. A head
 
 A repository adds `.github/workflows/validate-docs.yml` as one job in its `validate` workflow, in the pull request that brings its documents into line. The job fails when either document is missing.
 
+The checker reads the pair from the repository root, then from `docs/`. The root wins when both layouts carry a copy.
+
 The checker is the organisation's only reusable workflow. Each repository carries its own build and release, because a shared one lands every change everywhere. A checker is the opposite case: two copies drift, and the convention then differs by repository with nobody seeing it. It changes only in a pull request that changes this document.
 
 Rejected:
