@@ -206,7 +206,7 @@ function checkFile(name: DocName, path: string, text: string): string[] {
     const cap = (caps.sections as Record<string, number>)[section.heading];
     if (cap === undefined) continue;
     const count = countWords(section.body);
-    if (section.body.trim().length === 0) {
+    if (count === 0) {
       errors.push(`${name} § ${section.heading}: no text`);
     } else if (count > cap) {
       errors.push(`${name} § ${section.heading}: ${count} words, cap ${cap}`);
