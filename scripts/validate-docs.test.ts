@@ -124,6 +124,14 @@ describe("validate", () => {
     expect(validate(dir).errors).toContain("PRODUCT.md § Vision: no text");
   });
 
+  test("a section holding only a comment, a fence or a table rule has no text", () => {
+    const empty = ["<!-- none yet -->", "```\nthe plan\n```", "| --- | --- |"];
+    for (const body of empty) {
+      const dir = fixture(product({ Vision: body }), systems());
+      expect(validate(dir).errors).toContain("PRODUCT.md § Vision: no text");
+    }
+  });
+
   test("None is text", () => {
     expect(
       validate(fixture(product({ Vision: "None" }), systems())).errors,
