@@ -29,4 +29,4 @@ jobs:
           bun-version: 1.4.4
       - name: Validate PRODUCT.md and SYSTEMS.md
         working-directory: standard
-        run: bun run scripts/validate-docs.ts ../repo
+        run: bun run scripts/validate-docs.ts ../repo --require

@@ -97,6 +97,19 @@ describe("validate", () => {
     expect(validate(dir).errors).toEqual([]);
   });
 
+  test("require fails a directory with no pair", () => {
+    const dir = mkdtempSync(join(tmpdir(), "validate-docs-"));
+    expect(validate(dir, { require: true }).errors).toEqual([
+      "PRODUCT.md: not found",
+      "SYSTEMS.md: not found",
+    ]);
+  });
+
+  test("require passes a conforming pair", () => {
+    const dir = fixture(product(), systems());
+    expect(validate(dir, { require: true }).errors).toEqual([]);
+  });
+
   test("one word over a cap names the section and the number", () => {
     const dir = fixture(
       product({ Behaviour: words(CAP.Behaviour + 1, "behav") }),

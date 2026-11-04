@@ -87,7 +87,7 @@ The message carries the number: `PRODUCT.md § Behaviour: 412 words, cap 250`.
 
 A word is a whitespace-separated token of prose, list text or table cell. A heading, fenced code, link target, HTML comment and table rule do not count. `None` is text, so the section is not empty.
 
-A repository adds `.github/workflows/validate-docs.yml` as one job in its `validate` workflow, in the pull request that brings its documents into line.
+A repository adds `.github/workflows/validate-docs.yml` as one job in its `validate` workflow, in the pull request that brings its documents into line. The job fails when either document is missing.
 
 The checker is the organisation's only reusable workflow. Each repository carries its own build and release, because a shared one lands every change everywhere. A checker is the opposite case: two copies drift, and the convention then differs by repository with nobody seeing it. It changes only in a pull request that changes this document.
 
