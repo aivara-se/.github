@@ -3,6 +3,7 @@
  *
  *   bun run validate-docs          the current directory
  *   bun run validate-docs <dir>    the named directory
+ *   --require                      fail when either document is absent
  *
  * Exit 0 when every document passes and 1 when one fails. A directory with
  * neither document passes: not every repository carries them. The pair is read
@@ -149,7 +150,10 @@ function findDoc(dir: string, name: DocName): string | undefined {
 }
 
 /** Check one directory. Returns the findings, each ready to print. */
-export function validate(dir: string): {
+export function validate(
+  dir: string,
+  options: { require?: boolean } = {},
+): {
   errors: string[];
   checked: DocName[];
 } {
@@ -164,6 +168,12 @@ export function validate(dir: string): {
     const text = readFileSync(path, "utf8");
     bodies.set(name, text);
     errors.push(...checkFile(name, path, text));
+  }
+
+  if (options.require) {
+    for (const name of DOCS) {
+      if (!checked.includes(name)) errors.push(`${name}: not found`);
+    }
   }
 
   if (bodies.size === 2) {
@@ -239,8 +249,10 @@ function checkFile(name: DocName, path: string, text: string): string[] {
 }
 
 if (import.meta.main) {
-  const dir = resolve(process.argv[2] ?? ".");
-  const { errors, checked } = validate(dir);
+  const args = process.argv.slice(2);
+  const require = args.includes("--require");
+  const dir = resolve(args.find((arg) => !arg.startsWith("--")) ?? ".");
+  const { errors, checked } = validate(dir, { require });
   for (const error of errors) console.error(error);
   if (errors.length > 0) process.exit(1);
   console.log(
