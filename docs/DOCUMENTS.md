@@ -1,6 +1,8 @@
 # Document standard
 
-`PRODUCT.md` and `SYSTEMS.md` are contracts. Each follows a fixed set of headings, in a fixed order, inside a word budget. A heading with nothing to say keeps its place and says `None`.
+`PRODUCT.md` and `SYSTEMS.md` are contracts. Each follows a fixed set of headings, in a fixed order, inside a word budget. `README.md` and `DESIGN.md` have a shape and no budget. A heading with nothing to say keeps its place and says `None`.
+
+Effective 2026-11-04. An existing document comes into line at its next change.
 
 ## Why
 
@@ -15,6 +17,7 @@ The headings name the lifetime of each statement. The budget forces the author t
 | Why does this exist, and who is it for?       | `PRODUCT.md` |
 | What must hold in this version?               | `PRODUCT.md` |
 | How is it shaped, and what does it depend on? | `SYSTEMS.md` |
+| What does a person see, and with what values? | `DESIGN.md`  |
 | Why this way, and what did it cost?           | ADR          |
 | What is being built now?                      | issue        |
 | Does it work?                                 | test         |
@@ -27,14 +30,14 @@ The document states the goal and the boundary. An agent reads it to learn what i
 
 | Section | Cap | It holds |
 | --- | --- | --- |
-| `## Problem` | 120 | The person, the cost, and why now. The last paragraph says what the product is. |
-| `## Scope` | 150 | Three lists: `In`, `Not this version`, `Never`. |
-| `## Behaviour` | 340 | The rules a person can see. One rule per bullet, 25 words or fewer. |
-| `## Autonomy` | 70 | What an agent decides alone, and what needs a decision. |
-| `## Vision` | 50 | What this becomes, and what must not change on the way. |
-| `## Acceptance` | 70 | At most eight outcomes, each checkable by someone else. |
+| `## Problem` | 90 | The person, the cost, and why now. The last paragraph says what the product is. |
+| `## Scope` | 110 | Three lists: `In`, `Not this version`, `Never`. |
+| `## Behaviour` | 250 | The rules a person can see. One rule per bullet, 25 words or fewer. |
+| `## Autonomy` | 50 | What an agent decides alone, and what needs a decision. |
+| `## Vision` | 40 | What this becomes, and what must not change on the way. |
+| `## Acceptance` | 60 | At most eight outcomes, each checkable by someone else. |
 
-Total: 800 words.
+Total: 600 words.
 
 Rules:
 
@@ -44,7 +47,7 @@ Rules:
 - `## Autonomy` names what an agent decides alone: anything these two documents do not fix, inside the scope. It names what needs a decision first: a new dependency, a change to the data model, a change to an external interface, or anything `Never` forbids.
 - A rule the work needs and the document lacks is written here in the same pull request. The budget decides whether it stays.
 - `## Acceptance` is the proof: eight outcomes at most, each checkable by someone else. This list is enough; no other document repeats it.
-- The product document says nothing about versions. What shipped, and when, is the releases' record.
+- The product document keeps no changelog and no roadmap. What shipped, and when, is the release record.
 
 ## SYSTEMS.md
 
@@ -52,11 +55,11 @@ The system document is the shape of the running thing, in three parts.
 
 | Section | Cap | It holds |
 | --- | --- | --- |
-| `## Architecture` | 240 | The parts and what each is responsible for, the data they share, and the boundary each exposes. |
-| `## Dependencies` | 50 | What it needs and why. One line each. |
-| `## Failure modes` | 110 | One line per failure a person can meet, and what happens. |
+| `## Architecture` | 180 | The parts and what each is responsible for, the data they share, and the boundary each exposes. |
+| `## Dependencies` | 40 | What it needs and why. One line each. |
+| `## Failure modes` | 80 | One line per failure a person can meet, and what happens. |
 
-Total: 400 words.
+Total: 300 words.
 
 Rules:
 
@@ -64,13 +67,29 @@ Rules:
 - "One row per day, keyed by the local date" is data; a column list is implementation.
 - No config keys, no DDL, no file-by-file functions, no test, plan or decision.
 
+## README.md
+
+A README answers four questions, in this order: what the repository is, how to run it, how to use it, and how to check it. `writing-readmes.md` in `aivara-se/.agents` holds the shape.
+
+There is no budget. The four answers are short.
+
+## DESIGN.md
+
+`DESIGN.md` holds the interface's fixed values: geometry, type, colour and motion. It follows Google's DESIGN.md format, whose specification is at <https://stitch.withgoogle.com/docs/design-md/overview>. `writing-design-doc.md` in `aivara-se/.agents` holds the prose rules.
+
+There is no budget. Tokens are data.
+
 ## Enforcement
 
-`scripts/check-docs.ts` runs from `.github/workflows/docs.yml`, which a repository calls as one job in `validate`.
+`scripts/validate-docs.ts` implements this standard. It fails on a heading that is missing, unknown, duplicated or out of order; a section over its cap; a section with no text; a relative link that does not resolve; and twelve consecutive words that both documents carry, compared with case and punctuation removed.
 
-It fails on a heading that is missing, unknown or out of order; a section or a document over its cap; a section with no text; a relative link that does not resolve; and twelve words repeated across the two documents. The message carries the number: `PRODUCT.md § Behaviour: 412 words, cap 340`.
+The message carries the number: `PRODUCT.md § Behaviour: 412 words, cap 250`.
 
-This is the one workflow shared across repositories. The rule that each repository carries its own exists so a change lands once. A checker is the opposite case: two versions make a convention that differs by repository, and the difference is invisible. The checker changes only in a pull request that changes this document.
+A word is a whitespace-separated token of prose, list text or table cell. A heading, fenced code, link target, HTML comment and table rule do not count. `None` is text, so the section is not empty.
+
+A repository adds `.github/workflows/validate-docs.yml` as one job in its `validate` workflow, in the pull request that brings its documents into line.
+
+The checker is the organisation's only reusable workflow. Each repository carries its own build and release, because a shared one lands every change everywhere. A checker is the opposite case: two copies drift, and the convention then differs by repository with nobody seeing it. It changes only in a pull request that changes this document.
 
 Rejected:
 
