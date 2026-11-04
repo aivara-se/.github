@@ -5,7 +5,8 @@
  *   bun run validate-docs <dir>    the named directory
  *
  * Exit 0 when every document passes and 1 when one fails. A directory with
- * neither document passes: not every repository carries them.
+ * neither document passes: not every repository carries them. The pair is read
+ * from the root or from `docs/`, because both layouts are in the organisation.
  */
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { dirname, isAbsolute, resolve } from "node:path";
@@ -139,6 +140,14 @@ export function firstRepeat(a: string, b: string): string | undefined {
   return undefined;
 }
 
+/** The repositories keep the pair at the root or under `docs/`; root wins. */
+function findDoc(dir: string, name: DocName): string | undefined {
+  for (const candidate of [resolve(dir, name), resolve(dir, "docs", name)]) {
+    if (existsSync(candidate) && statSync(candidate).isFile()) return candidate;
+  }
+  return undefined;
+}
+
 /** Check one directory. Returns the findings, each ready to print. */
 export function validate(dir: string): {
   errors: string[];
@@ -149,8 +158,8 @@ export function validate(dir: string): {
   const bodies = new Map<DocName, string>();
 
   for (const name of DOCS) {
-    const path = resolve(dir, name);
-    if (!existsSync(path) || !statSync(path).isFile()) continue;
+    const path = findDoc(dir, name);
+    if (path === undefined) continue;
     checked.push(name);
     const text = readFileSync(path, "utf8");
     bodies.set(name, text);

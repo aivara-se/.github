@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import {
@@ -76,6 +76,25 @@ describe("validate", () => {
   test("a directory with neither document passes", () => {
     const dir = mkdtempSync(join(tmpdir(), "validate-docs-"));
     expect(validate(dir)).toEqual({ errors: [], checked: [] });
+  });
+
+  test("a pair under docs/ passes", () => {
+    const dir = mkdtempSync(join(tmpdir(), "validate-docs-"));
+    mkdirSync(join(dir, "docs"));
+    writeFileSync(join(dir, "docs", "PRODUCT.md"), product());
+    writeFileSync(join(dir, "docs", "SYSTEMS.md"), systems());
+    expect(validate(dir).errors).toEqual([]);
+  });
+
+  test("a link under docs/ resolves beside the document", () => {
+    const dir = mkdtempSync(join(tmpdir(), "validate-docs-"));
+    mkdirSync(join(dir, "docs"));
+    writeFileSync(
+      join(dir, "docs", "PRODUCT.md"),
+      product({ Scope: `${words(5, "scope")} [the system](SYSTEMS.md)` }),
+    );
+    writeFileSync(join(dir, "docs", "SYSTEMS.md"), systems());
+    expect(validate(dir).errors).toEqual([]);
   });
 
   test("one word over a cap names the section and the number", () => {
