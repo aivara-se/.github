@@ -1,0 +1,32 @@
+name: validate-docs
+
+# The organisation's only reusable workflow. A repository adds it as one job
+# in its `validate` workflow. The checkout of this repository is pinned to
+# `main`, so every repository runs the same checker.
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-docs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out the repository under test
+        uses: actions/checkout@v7
+        with:
+          path: repo
+      - name: Check out the standard
+        uses: actions/checkout@v7
+        with:
+          repository: aivara-se/.github
+          ref: main
+          path: standard
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+      - name: Validate PRODUCT.md and SYSTEMS.md
+        working-directory: standard
+        run: bun run scripts/validate-docs.ts ../repo

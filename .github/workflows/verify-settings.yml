@@ -1,0 +1,25 @@
+name: verify-settings
+
+# `verify-settings` is the organisation-wide settings check. Run it by hand:
+# the Actions tab, or `gh workflow run verify-settings`. It needs
+# ORG_READ_TOKEN, which a pull request from a fork does not receive.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-settings:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+      # The script imports nothing but Bun's own globals, so there is no install step.
+      - name: Check every repository against docs/SETTINGS.md
+        run: bun run verify-settings
+        env:
+          GH_TOKEN: ${{ secrets.ORG_READ_TOKEN }}
