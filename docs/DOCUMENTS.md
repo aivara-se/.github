@@ -84,7 +84,7 @@ There is no budget. Tokens are data.
 
 A repository's entry file is `AGENTS.md` at its root, and it is the same file in every repository: [ENTRY.md](ENTRY.md), copied without a change.
 
-It states only what does not move: the documents to read, the rules that hold everywhere, and how work lands. What a repository is belongs in its `README.md` and `PRODUCT.md`. How it is built and checked belongs in its `SYSTEMS.md`. A rule that must differ per repository goes in `SYSTEMS.md`, so the entry file never needs an edit.
+It states only what does not move: the documents to read, the rules that hold everywhere, and how work lands. What a repository is belongs in its `README.md` and `PRODUCT.md`. How it is shaped belongs in its `SYSTEMS.md`. A rule that must differ per repository goes in `SYSTEMS.md`, so the entry file never needs an edit.
 
 The copy is checked, not trusted. `scripts/validate-agents.ts` compares it with the standard byte for byte and names the first differing line. Its test holds this repository's own copy equal to the standard.
 
