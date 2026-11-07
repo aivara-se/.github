@@ -1,51 +1,31 @@
 # Agent Instructions
 
-The organisation's shared repository: the files GitHub serves to every `aivara-se` repository, and the standards those repositories follow. `README.md` says what lands here. This file says how a change here is made.
+This file is identical in every `aivara-se` repository. Edit `aivara-se/.github`; a differing copy fails the check.
 
-## Where a fact lives
+## Read first
 
-- `README.md` — what this repository is for, and what belongs in it.
-- `docs/SETTINGS.md` — the baseline every repository carries, and what the default branch accepts.
-- `docs/RELEASES.md` — the release standard.
-- `.github/workflows/` — the checks that run, and the only copy of them.
+- `README.md` — what this is and how to run it.
+- `PRODUCT.md` (root or `docs/`) — what this is, who it serves, and what would make it done.
+- `SYSTEMS.md`, where present — how it is built and checked, the gate included.
+- `DESIGN.md` — the interface values, where one exists.
+- `docs/adrs/` — a decision per file, written before the code it decides.
 
-One fact, one home. A rule that applies to one repository belongs in that repository, not here.
+Link to a document; never restate it. A rule that differs per repository is `SYSTEMS.md`'s.
 
 ## House rules
 
-- Every file here is the only copy of what it says. A change to one is a change to every repository, so name what it affects in the pull request.
-- A workflow default is a claim about every repository. Change it when the repositories can follow it, not before.
-- A comment beside a step says why the step exists. Delete the comment when the step goes.
+- Never commit a secret. A configuration file names one and holds no value.
+- Never report "tests pass" or "verified" without the command and the tree.
+- Never add a second package manager, lockfile, formatter or test runner; use the one it carries.
+- A script that runs commands is TypeScript on `bun`; shell only when it stays a few lines.
+- Open the skill whose `when-to-use` covers the work, in `aivara-se/.agents/skills`; no copy exists.
+- Never edit a merged ADR. Supersede it, naming the clauses it overrides.
 
-## Tooling
+## Version control
 
-- **Bun runs the scripts.** A script that runs commands is TypeScript, run with `bun run scripts/<name>.ts` — never Python, and a shell script only when it stays a few lines. A command typed at the prompt is not a script.
-- **Never** add a second package manager, lockfile, formatter or test runner. The toolchain is the one the repository already declares.
-- **Never** report "tests pass", "it builds" or "verified" without the command and the tree it ran against.
-
-## Verify before pushing
-
-```bash
-bun install --frozen-lockfile
-bun fmt --no-script --check .
-bun x tsc --noEmit
-bun test
-```
-
-Run the whole sequence and read every result — the last exit code says nothing about the first.
-
-The same commands run in `.github/workflows/validate.yml`, whose job is named `validate`: that is the check the default branch requires before a merge. `verify-settings` is not part of this sequence. It reads the live organisation, needs `ORG_READ_TOKEN`, and runs by hand.
-
-## Version Control
-
-- **Branches**: lowercase, hyphens, one per task: `docs/`, `feat/`, `fix/` or `chore/` and a short name — `docs/adopt-agents-config`, `fix-log-timezone`. No uppercase, no underscores, no personal prefixes.
-- **Commits**: Conventional Commits, lowercase, single line, no scopes — `type: short description`.
-- **Never** commit to `main` directly, and **never** force-push a branch someone else has seen.
-- Keep history linear: no merge commits, no empty commits, no work-in-progress commits.
-- Commit under your own identity, never another agent's.
-- Remote work is a branch plus a pull request: the body says what changed, what was verified and how, and what was left out. Leave the tree clean.
-- Request review from the operator (`thani-sh`) alone on a documents-only change, and from one peer agent as well on an implementation one.
-
-## Skills
-
-The organisation's skills live in `aivara-se/.agents/skills` and every agent reads them from there; a repository carries no copy. Each declares a `when-to-use`: open the one that covers the work before starting it.
+- Branch: lowercase and hyphens, one per task — `docs/`, `feat/`, `fix/` or `chore/` and a short name.
+- Commit: Conventional Commits, lowercase, single line, no scope.
+- Never commit to `main`; never force-push a branch another person has seen; keep history linear.
+- Commit under your own name.
+- Land as a branch and a pull request. The body says what changed, what was verified, what was left out.
+- The operator reviews a documents-only change alone; an implementation adds a peer.
