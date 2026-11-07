@@ -20,8 +20,9 @@ The default branch requires a merge queue, so a pull request joins the queue rat
 
 - The queue tests the merged result on a temporary `merge_group` ref and lands the pull request only after the required `validate` check passes there. Two pull requests that each pass alone are refused together instead of breaking the default branch.
 - `validate` runs on `merge_group` as well as on the pull request, in every repository's workflow of that name. A workflow that triggers only on `pull_request` reports nothing for the ref, and the queued pull request waits until the check times out instead of merging.
-- The queue merges by rebase, so a queued batch still lands as linear history. It builds and merges up to five entries, waits five minutes for a batch to fill before it starts, and allows a check sixty minutes before it gives up.
-- Adding a pull request to the queue is not a merge command: it needs the web interface, or the API's enqueue request. The fleet's `gh` version has no queue flag.
+- The queue merges by rebase, so a queued batch still lands as linear history. One entry lands as soon as its checks pass, and the merge limits cap a batch at five entries. A check has sixty minutes before the queue treats it as failed.
+- `gh pr merge` enqueues a pull request on a branch that requires the queue: no merge strategy is passed, and while the required checks are still running the command arms auto-merge instead.
+- Removing a pull request from the queue is a web action: GitHub CLI adds pull requests and cancels auto-merge, and cannot take one out of the queue.
 
 ## Pull requests
 
@@ -32,7 +33,7 @@ Everything on the default branch arrives through a pull request, and a push stra
 - The `validate` check is required: a pull request merges only when the `validate` run for its last commit has passed. A red, running or absent `validate` check blocks the merge.
 - The check is the job's name, not the workflow file's. A workflow named `validate` runs on every pull request and reports a job named `validate`.
 - A job that a condition skips reports success and satisfies the check without running. A `paths` filter on the workflow's trigger is not that: the workflow never starts, the check stays pending, and the merge is blocked.
-- The branch must be up to date with the default branch: a pull request whose branch is behind does not merge until it is rebased on the default branch and pushed again, and the check runs again on the new head.
+- A branch behind the default branch does not need rebasing before it merges: the queue rebuilds the entry on the latest default branch and runs the check there.
 - A review that requests changes blocks the merge until that reviewer approves the pull request, or someone with write access dismisses the review.
 - The approval has to cover the last push. A push to the branch dismisses the approvals the change invalidated, and an approval from the person who pushed last does not satisfy the requirement, so push first and ask for review on what will merge.
 - Force-pushing the default branch, and deleting it, are refused.
