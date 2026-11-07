@@ -53,6 +53,7 @@ const BASELINE = {
       "required_linear_history",
       "pull_request",
       "required_status_checks",
+      "merge_queue",
     ],
     forbidden_rules: [],
     pull_request: {
@@ -63,6 +64,16 @@ const BASELINE = {
       require_last_push_approval: true,
       required_review_thread_resolution: false,
       allowed_merge_methods: ["rebase"],
+    },
+    // The queue lands a pull request by rebase, so `required_linear_history` still holds.
+    merge_queue: {
+      merge_method: "REBASE",
+      grouping_strategy: "ALLGREEN",
+      max_entries_to_build: 5,
+      max_entries_to_merge: 5,
+      min_entries_to_merge: 1,
+      min_entries_to_merge_wait_minutes: 5,
+      check_response_timeout_minutes: 60,
     },
     // `validate` is the job name in every repository's .github/workflows/validate.yml,
     // which is also the name GitHub reports the check under.
@@ -527,6 +538,18 @@ async function checkRepository(
         statusChecks.strict_required_status_checks_policy,
         BASELINE.ruleset.required_status_checks.strict,
       );
+    }
+    const mergeQueue = (ruleset.rules ?? []).find(
+      (rule: Json) => rule.type === "merge_queue",
+    )?.parameters;
+    if (!mergeQueue) {
+      record("ruleset.rules.merge_queue.parameters", "present", "absent");
+    } else {
+      for (const [setting, expected] of Object.entries(
+        BASELINE.ruleset.merge_queue,
+      )) {
+        expect(`ruleset.merge_queue.${setting}`, mergeQueue[setting], expected);
+      }
     }
   }
 

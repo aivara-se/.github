@@ -14,6 +14,15 @@ Rebase only: the default branch moves one commit at a time, and a change lands a
 - Auto-merge is on: an author can arm a pull request to merge itself once the ruleset's conditions hold, so the approving review is the last act before it lands rather than a step before someone clicks merge.
 - **Update branch** is off. Rebase your branch on the default branch and force-push your own branch, which is safe on a branch only you work on.
 
+## Merge queue
+
+The default branch requires a merge queue, so a pull request joins the queue rather than merging on its own.
+
+- The queue tests the merged result on a temporary `merge_group` ref and lands the pull request only after the required `validate` check passes there. Two pull requests that each pass alone are refused together instead of breaking the default branch.
+- `validate` runs on `merge_group` as well as on the pull request, in every repository's workflow of that name. A workflow that triggers only on `pull_request` reports nothing for the ref, and the queued pull request waits until the check times out instead of merging.
+- The queue merges by rebase, so a queued batch still lands as linear history. It builds and merges up to five entries, waits five minutes for a batch to fill before it starts, and allows a check sixty minutes before it gives up.
+- Adding a pull request to the queue is not a merge command: it needs the web interface, or the API's enqueue request. The fleet's `gh` version has no queue flag.
+
 ## Pull requests
 
 Everything on the default branch arrives through a pull request, and a push straight to that branch is refused.
