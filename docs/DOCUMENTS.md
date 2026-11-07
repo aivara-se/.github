@@ -18,6 +18,7 @@ The headings name the lifetime of each statement. The budget forces the author t
 | What must hold in this version?               | `PRODUCT.md` |
 | How is it shaped, and what does it depend on? | `SYSTEMS.md` |
 | What does a person see, and with what values? | `DESIGN.md`  |
+| What must hold in every repository?           | `AGENTS.md`  |
 | Why this way, and what did it cost?           | ADR          |
 | What is being built now?                      | issue        |
 | Does it work?                                 | test         |
@@ -79,6 +80,21 @@ There is no budget. The four answers are short.
 
 There is no budget. Tokens are data.
 
+## AGENTS.md
+
+A repository's entry file is `AGENTS.md` at its root, and it is the same file in every repository: [ENTRY.md](ENTRY.md), copied without a change.
+
+It states only what does not move: the documents to read, the rules that hold everywhere, and how work lands. What a repository is belongs in its `README.md` and `PRODUCT.md`. How it is built and checked belongs in its `SYSTEMS.md`. A rule that must differ per repository goes in `SYSTEMS.md`, so the entry file never needs an edit.
+
+The copy is checked, not trusted. `scripts/validate-agents.ts` compares it with the standard byte for byte and names the first differing line. Its test holds this repository's own copy equal to the standard.
+
+A repository adopts the file by copying it and adding `.github/workflows/validate-agents.yml` as a job in its `validate` workflow. An agent that needs a rule change edits `ENTRY.md`; every repository follows at its next merge.
+
+Rejected:
+
+- **Slots filled per repository.** Six slots are six decisions at every adoption, and two copies already differ.
+- **No entry file.** A skill loads when a task matches its `when-to-use`. Nothing matches when an agent opens a repository for the first time.
+
 ## Enforcement
 
 `scripts/validate-docs.ts` implements this standard. It fails on a heading that is missing, unknown, duplicated or out of order; a section over its cap; a section with no text; a relative link that does not resolve; and twelve consecutive words that both documents carry, compared with case and punctuation removed.
@@ -91,7 +107,7 @@ A repository adds `.github/workflows/validate-docs.yml` as one job in its `valid
 
 The checker reads the pair from the repository root, then from `docs/`. The root wins when both layouts carry a copy.
 
-The checker is the organisation's only reusable workflow. Each repository carries its own build and release, because a shared one lands every change everywhere. A checker is the opposite case: two copies drift, and the convention then differs by repository with nobody seeing it. It changes only in a pull request that changes this document.
+The document checker is one of two reusable workflows; the other checks the entry file. Each repository carries its own build and release, because a shared one lands every change everywhere. A checker is the opposite case: two copies drift, and the convention then differs by repository with nobody seeing it. It changes only in a pull request that changes this document.
 
 Rejected:
 

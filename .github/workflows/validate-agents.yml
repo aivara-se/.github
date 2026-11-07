@@ -1,0 +1,31 @@
+name: validate-agents
+
+# A repository adds this as one job in its `validate` workflow. The standard is
+# pinned to `main`, so every repository is checked against the same file.
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-agents:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out the repository under test
+        uses: actions/checkout@v7
+        with:
+          path: repo
+      - name: Check out the standard
+        uses: actions/checkout@v7
+        with:
+          repository: aivara-se/.github
+          ref: main
+          path: standard
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+      - name: Check AGENTS.md
+        working-directory: standard
+        run: bun run scripts/validate-agents.ts --canon docs/ENTRY.md --entry ../repo/AGENTS.md
