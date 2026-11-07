@@ -4,6 +4,7 @@ name: validate
 # requires.
 on:
   pull_request:
+  merge_group:
 
 permissions:
   contents: read
