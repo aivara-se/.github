@@ -1,8 +1,8 @@
 name: validate-docs
 
-# The organisation's only reusable workflow. A repository adds it as one job
-# in its `validate` workflow. The checkout of this repository is pinned to
-# `main`, so every repository runs the same checker.
+# A repository adds it as one job in its `validate` workflow. The checkout of
+# this repository is pinned to `main`, so every repository runs the same
+# checker.
 on:
   workflow_call:
 

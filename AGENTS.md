@@ -1,16 +1,17 @@
 # Agent Instructions
 
-This file is identical in every `aivara-se` repository. Edit `aivara-se/.github`; a differing copy fails the check.
+This file is identical in every `aivara-se` repository. Edit `aivara-se/.github`; a differing copy fails.
 
 ## Read first
 
 - `README.md` — what this is, how to run it, and how to check it.
-- `PRODUCT.md` (root or `docs/`) — what this is, who it serves, and what would make it done.
+- `PRODUCT.md` (root or `docs/`) — who it serves, and what would make it done.
 - `SYSTEMS.md`, where present — how it is shaped and what it depends on.
 - `DESIGN.md` — the interface values, where present.
 - `docs/adrs/` — a decision per file, written before the code it decides.
+- `SETTINGS.md`, `aivara-se/.github/docs` — every repository's baseline.
 
-Link to a document; never restate it. A rule that differs per repository is `SYSTEMS.md`'s.
+Link to a document; never restate it. A per-repository rule belongs in `SYSTEMS.md`.
 
 ## House rules
 
