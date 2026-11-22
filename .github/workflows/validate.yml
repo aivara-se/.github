@@ -1,28 +1,26 @@
 name: validate
 
-# `validate` runs on every pull request and is the check the default branch
-# requires.
 on:
   pull_request:
   merge_group:
 
-permissions:
-  contents: read
-
 jobs:
+  validate-agents:
+    uses: aivara-se/.github/.github/workflows/validate-agents.yml@main
+
+  validate-docs:
+    uses: aivara-se/.github/.github/workflows/validate-docs.yml@main
+
+  validate-config:
+    uses: aivara-se/.github/.github/workflows/validate-config.yml@main
+    secrets:
+      ORG_READ_TOKEN: ${{ secrets.ORG_READ_TOKEN }}
+
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.4.4
-      - name: Install
-        run: bun install --frozen-lockfile
-      - name: Format
-        run: bun fmt --no-script --check .
-      - name: Type check
-        run: bun x tsc --noEmit
-      - name: Validate docs/SPEC8N.md
-        run: bun run validate-docs --require .
+      - run: bun fmt --no-script --check .
