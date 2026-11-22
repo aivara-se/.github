@@ -13,10 +13,7 @@ import { resolve } from "node:path";
 const SLOT = /\{\{[A-Z_]+\}\}/;
 
 /** The first line at which two texts differ, or undefined when they match. */
-export function firstDifference(
-  canon: string,
-  entry: string,
-): string | undefined {
+function firstDifference(canon: string, entry: string): string | undefined {
   if (canon === entry) return undefined;
   const left = canon.split("\n");
   const right = entry.split("\n");
@@ -29,7 +26,7 @@ export function firstDifference(
 }
 
 /** The findings for one pair, each ready to print. */
-export function validate(canonPath: string, entryPath: string): string[] {
+function validate(canonPath: string, entryPath: string): string[] {
   if (!existsSync(canonPath)) return [`${canonPath}: the standard is missing`];
   if (!existsSync(entryPath)) return [`${entryPath}: not found`];
   const entry = readFileSync(entryPath, "utf8");
@@ -49,7 +46,7 @@ if (import.meta.main) {
     const index = args.indexOf(flag);
     return index === -1 ? fallback : (args[index + 1] ?? fallback);
   };
-  const canon = resolve(value("--canon", "docs/ENTRY.md"));
+  const canon = resolve(value("--canon", "AGENTS.md"));
   const entry = resolve(value("--entry", "AGENTS.md"));
   const errors = validate(canon, entry);
   for (const error of errors) console.error(error);

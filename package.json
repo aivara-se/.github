@@ -5,8 +5,7 @@
   "scripts": {
     "validate-agents": "bun run scripts/validate-agents.ts",
     "validate-docs": "bun run scripts/validate-docs.ts",
-    "verify-settings": "bun run scripts/verify-settings.ts",
-    "test": "bun test"
+    "validate-config": "bun run scripts/validate-config.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"

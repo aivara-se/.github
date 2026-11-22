@@ -4,29 +4,31 @@
  * every setting that differs. The document is the specification and this file is its
  * enforcement, so a change to one belongs in the same change as the other.
  *
- *   bun run verify-settings                    every repository of aivara-se
- *   bun run verify-settings --repo keysmash    the named repositories only
- *   bun run verify-settings --json             findings as JSON
+ *   bun run validate-config                    every repository of aivara-se
+ *   bun run validate-config --repo keysmash    the named repositories only
+ *   bun run validate-config --json             findings as JSON
  *
  * The token must be able to read settings on every repository in the organisation
  * (repository administration read):
  *
- *   GH_TOKEN=$(gh auth token) bun run verify-settings
+ *   GH_TOKEN=$(gh auth token) bun run validate-config
  *
- * The verify-settings workflow reads it from the ORG_READ_TOKEN secret. A missing token
+ * The validate-config workflow reads it from the ORG_READ_TOKEN secret. A missing token
  * exits 2 with that message rather than reporting every repository as broken.
  *
  * Exit status: 0 every repository matches, 1 at least one setting differs,
  * 2 no usable token or unusable arguments.
  */
-
 const API = "https://api.github.com";
 const DOCUMENT = "docs/SETTINGS.md";
 
 /**
  * Every value here is a line of the document. The document says what the
  * organisation requires; this is the same requirement in a form a program can
- * compare against a repository.
+ * compare against a repository. The queue lands a pull request by rebase, so
+ * `required_linear_history` still holds through it. `validate` is the job name in
+ * every repository's `.github/workflows/validate.yml`, which is also the name
+ * GitHub reports the check under.
  */
 const BASELINE = {
   repository: {
@@ -34,7 +36,7 @@ const BASELINE = {
     allow_squash_merge: false,
     allow_rebase_merge: true,
     delete_branch_on_merge: true,
-    allow_auto_merge: true,
+    allow_auto_merge: false,
     allow_update_branch: false,
     has_issues: true,
     has_discussions: false,
@@ -65,7 +67,6 @@ const BASELINE = {
       required_review_thread_resolution: false,
       allowed_merge_methods: ["rebase"],
     },
-    // The queue lands a pull request by rebase, so `required_linear_history` still holds.
     merge_queue: {
       merge_method: "REBASE",
       grouping_strategy: "ALLGREEN",
@@ -75,8 +76,6 @@ const BASELINE = {
       min_entries_to_merge_wait_minutes: 5,
       check_response_timeout_minutes: 60,
     },
-    // `validate` is the job name in every repository's .github/workflows/validate.yml,
-    // which is also the name GitHub reports the check under.
     required_status_checks: {
       contexts: ["validate"],
       strict: true,
@@ -152,7 +151,7 @@ interface Options {
 function usage(): never {
   console.error(
     [
-      `usage: bun run verify-settings [--org NAME] [--repo NAME]... [--json]`,
+      `usage: bun run validate-config [--org NAME] [--repo NAME]... [--json]`,
       ``,
       `  --org NAME    organisation to check (default aivara-se)`,
       `  --repo NAME   check one repository, repeatable (default: every repository)`,
@@ -189,9 +188,9 @@ function token(): string {
   if (!value) {
     console.error(
       [
-        `verify-settings needs a token that reads repository administration across ${"the organisation"}.`,
+        `validate-config needs a token that reads repository administration across ${"the organisation"}.`,
         ``,
-        `  locally   GH_TOKEN=$(gh auth token) bun run verify-settings`,
+        `  locally   GH_TOKEN=$(gh auth token) bun run validate-config`,
         `  in CI     set the ORG_READ_TOKEN repository secret`,
       ].join("\n"),
     );
@@ -209,7 +208,7 @@ async function request(
       authorization: `Bearer ${auth}`,
       accept: "application/vnd.github+json",
       "x-github-api-version": "2022-11-28",
-      "user-agent": "aivara-se-verify-settings",
+      "user-agent": "aivara-se-validate-config",
     },
   });
   const text = await response.text();
@@ -233,7 +232,7 @@ async function graphql(
       authorization: `Bearer ${auth}`,
       accept: "application/vnd.github+json",
       "content-type": "application/json",
-      "user-agent": "aivara-se-verify-settings",
+      "user-agent": "aivara-se-validate-config",
     },
     body: JSON.stringify({ query, variables }),
   });
@@ -302,7 +301,7 @@ function canonical(value: unknown): string {
  * The trigger names a workflow declares. `on:` takes a name, a list of names, or a
  * map whose keys are the names.
  */
-export function triggerNames(on: unknown): string[] {
+function triggerNames(on: unknown): string[] {
   if (typeof on === "string") return [on];
   if (Array.isArray(on))
     return on.filter((name): name is string => typeof name === "string");
@@ -314,7 +313,7 @@ export function triggerNames(on: unknown): string[] {
  * The names the checks of a workflow are reported under: a job's `name` when it sets
  * one, and its key under `jobs` otherwise.
  */
-export function checkNames(jobs: unknown): string[] {
+function checkNames(jobs: unknown): string[] {
   if (jobs === null || typeof jobs !== "object") return [];
   return Object.entries(jobs as Json).map(([key, job]) => {
     const name = (job as Json | null)?.name;
@@ -328,7 +327,7 @@ export function checkNames(jobs: unknown): string[] {
  * requests and one of them to report a check named `validate`. Two files may carry
  * the name, so each predicate looks at any of them rather than at all of them.
  */
-export function validateGate(documents: Json[]): {
+function validateGate(documents: Json[]): {
   named: boolean;
   pullRequest: boolean;
   checkName: boolean;
@@ -371,19 +370,11 @@ async function checkRepository(
     if (canonical(actual) !== canonical(expected))
       record(setting, expected, actual);
   };
-
   const repo = await request(`/repos/${org}/${repository}`, auth);
   if (repo.status !== 200) {
     record("repository is readable", "HTTP 200", `HTTP ${repo.status}`);
     return { repository, findings };
   }
-
-  // The gate is a workflow named validate that runs on pull requests and reports a
-  // check named validate. A required status check matches the name of the check run,
-  // which is the job's name, so a workflow called validate whose job is called
-  // anything else satisfies a name check and never satisfies the rule. The actions
-  // list returns workflows registered on any branch, so read the default branch's
-  // files and the names each one declares.
   const branch =
     typeof repo.body.default_branch === "string"
       ? repo.body.default_branch
@@ -429,10 +420,6 @@ async function checkRepository(
       expect("workflow.validate.check_name", gate.checkName, true);
     }
   }
-
-  // The repository-level settings come from GraphQL. The REST repository object
-  // omits them for a fine-grained token that holds administration read, and the
-  // two APIs name every one of these fields differently.
   const answer = await graphql(
     REPOSITORY_SETTINGS_QUERY,
     { owner: org, name: repository },
@@ -454,7 +441,6 @@ async function checkRepository(
       );
     }
   }
-
   const listed = await request(`/repos/${org}/${repository}/rulesets`, auth);
   const summary = Array.isArray(listed.body)
     ? listed.body.find(
@@ -552,7 +538,6 @@ async function checkRepository(
       }
     }
   }
-
   const permissions = await request(
     `/repos/${org}/${repository}/actions/permissions`,
     auth,
@@ -571,7 +556,6 @@ async function checkRepository(
       BASELINE.actions.allowed_actions,
     );
   }
-
   const selected = await request(
     `/repos/${org}/${repository}/actions/permissions/selected-actions`,
     auth,
@@ -589,7 +573,6 @@ async function checkRepository(
       );
     }
   }
-
   const workflow = await request(
     `/repos/${org}/${repository}/actions/permissions/workflow`,
     auth,
@@ -603,7 +586,6 @@ async function checkRepository(
       expect(`actions.workflow.${setting}`, workflow.body[setting], expected);
     }
   }
-
   const analysis = repo.body.security_and_analysis;
   if (!analysis) {
     record(
@@ -628,18 +610,16 @@ async function checkRepository(
       BASELINE.security.dependabot_security_updates,
     );
   }
-
-  // 204 with alerts on, 404 with them off.
   const alerts = await request(
     `/repos/${org}/${repository}/vulnerability-alerts`,
     auth,
   );
+  const alertsEnabled = alerts.status === 204;
   expect(
     "security.dependabot_alerts",
-    alerts.status === 204,
+    alertsEnabled,
     BASELINE.security.dependabot_alerts,
   );
-
   const fixes = await request(
     `/repos/${org}/${repository}/automated-security-fixes`,
     auth,
@@ -662,14 +642,13 @@ async function checkRepository(
       false,
     );
   }
-
   return { repository, findings };
 }
 
 function printText(results: Result[], org: string): void {
   const findings = results.flatMap((result) => result.findings);
   console.log(
-    `verify-settings: ${results.length} repositories in ${org}, checked against ${DOCUMENT}\n`,
+    `validate-config: ${results.length} repositories in ${org}, checked against ${DOCUMENT}\n`,
   );
   for (const result of results) {
     if (result.findings.length === 0) {
@@ -700,11 +679,9 @@ async function main(): Promise<void> {
     options.repositories.length > 0
       ? options.repositories
       : await repositoriesOf(options.org, auth);
-
   const results = await pooled(repositories, 4, (repository) =>
     checkRepository(options.org, repository, auth),
   );
-
   if (options.json) {
     console.log(
       JSON.stringify(

@@ -1,0 +1,34 @@
+name: validate-config
+
+# A repository adds it as one job in its `validate` workflow. The checkout of
+# this repository is pinned to `main`, so every repository runs the same
+# checker. The job reads the caller's settings through the API, so it needs
+# ORG_READ_TOKEN, passed by the caller.
+on:
+  workflow_call:
+    secrets:
+      ORG_READ_TOKEN:
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate-config:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out the standard
+        uses: actions/checkout@v7
+        with:
+          repository: aivara-se/.github
+          ref: main
+          path: standard
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+      - name: Validate the repository's settings against docs/SETTINGS.md
+        working-directory: standard
+        run: bun run scripts/validate-config.ts --repo "${{ github.event.repository.name }}"
+        env:
+          GH_TOKEN: ${{ secrets.ORG_READ_TOKEN }}
