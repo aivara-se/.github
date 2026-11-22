@@ -11,7 +11,7 @@ Rebase only: the default branch moves one commit at a time, and a change lands a
 - Merge commits and squash merges are off, and the ruleset's pull-request rule accepts `rebase` as the only merge method, so the merge box offers **Rebase and merge** and nothing else.
 - Linear history is required, so a branch that contains a merge commit is refused instead of being flattened on the way in.
 - The head branch is deleted when a pull request merges. Branch off the default branch, keep the branch local to the work, and expect it to be gone afterwards.
-- Auto-merge is on: an author can arm a pull request to merge itself once the ruleset's conditions hold, so the approving review is the last act before it lands rather than a step before someone clicks merge.
+- Auto-merge is off: nobody can arm a pull request to merge itself. A pull request lands only when a person merges it, or adds it to the queue, after its required checks pass.
 - **Update branch** is off. Rebase your branch on the default branch and force-push your own branch, which is safe on a branch only you work on.
 
 ## Merge queue
@@ -21,8 +21,8 @@ The default branch requires a merge queue, so a pull request joins the queue rat
 - The queue tests the merged result on a temporary `merge_group` ref and lands the pull request only after the required `validate` check passes there. Two pull requests that each pass alone are refused together instead of breaking the default branch.
 - `validate` runs on `merge_group` as well as on the pull request, in every repository's workflow of that name. A workflow that triggers only on `pull_request` reports nothing for the ref, and the queued pull request waits until the check times out instead of merging.
 - The queue merges by rebase, so a queued batch still lands as linear history. One entry lands as soon as its checks pass, and the merge limits cap a batch at five entries. A check has sixty minutes before the queue treats it as failed.
-- `gh pr merge` enqueues a pull request on a branch that requires the queue: no merge strategy is passed, and while the required checks are still running the command arms auto-merge instead.
-- Removing a pull request from the queue is a web action: GitHub CLI adds pull requests and cancels auto-merge, and cannot take one out of the queue.
+- `gh pr merge` enqueues a pull request on a branch that requires the queue: no merge strategy is passed. With auto-merge off, the command enqueues only once the required checks have passed, and fails while they are still running.
+- Removing a pull request from the queue is a web action: GitHub CLI cannot take one out of the queue.
 
 ## Pull requests
 

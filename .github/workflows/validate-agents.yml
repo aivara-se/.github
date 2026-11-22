@@ -28,4 +28,4 @@ jobs:
           bun-version: 1.4.4
       - name: Check AGENTS.md
         working-directory: standard
-        run: bun run scripts/validate-agents.ts --canon docs/ENTRY.md --entry ../repo/AGENTS.md
+        run: bun run scripts/validate-agents.ts --canon AGENTS.md --entry ../repo/AGENTS.md

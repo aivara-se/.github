@@ -1,53 +1,25 @@
 /**
- * Check PRODUCT.md and SYSTEMS.md against docs/DOCUMENTS.md.
+ * Check docs/SPEC8N.md against the document standard.
  *
  *   bun run validate-docs          the current directory
  *   bun run validate-docs <dir>    the named directory
- *   --require                      fail when either document is absent
+ *   --require                      fail when the document is absent
  *
- * Exit 0 when every document passes and 1 when one fails. A directory with
- * neither document passes: not every repository carries them. The pair is read
- * from the root or from `docs/`, because both layouts are in the organisation.
+ * Exit 0 when the document passes and 1 when it fails. A directory with no
+ * SPEC8N.md passes: not every repository carries one. The document is read from
+ * the root or from `docs/`; the root wins when both carry a copy.
  */
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { dirname, isAbsolute, resolve } from "node:path";
 
-type DocName = "PRODUCT.md" | "SYSTEMS.md";
+const DOCS = ["SPEC8N.md"] as const;
 
-const DOCS: readonly DocName[] = ["PRODUCT.md", "SYSTEMS.md"];
-
-export const HEADINGS: Record<DocName, readonly string[]> = {
-  "PRODUCT.md": [
-    "Problem",
-    "Scope",
-    "Behaviour",
-    "Autonomy",
-    "Vision",
-    "Acceptance",
-  ],
-  "SYSTEMS.md": ["Architecture", "Dependencies", "Failure modes"],
+const HEADINGS: Record<string, readonly string[]> = {
+  "SPEC8N.md": ["Direction", "Requirements", "Architecture"],
 };
 
-export const CAPS = {
-  "PRODUCT.md": {
-    total: 600,
-    sections: {
-      Problem: 90,
-      Scope: 110,
-      Behaviour: 250,
-      Autonomy: 50,
-      Vision: 40,
-      Acceptance: 60,
-    },
-  },
-  "SYSTEMS.md": {
-    total: 300,
-    sections: { Architecture: 180, Dependencies: 40, "Failure modes": 80 },
-  },
-} as const;
-
-/** The number of consecutive words both documents may not share. */
-const REPEAT = 12;
+/** The most words the whole document may hold. */
+const CAP = 500;
 
 const FENCE = /^\s*(```|~~~)/;
 const SECTION = /^##\s+(.+?)\s*$/;
@@ -55,13 +27,13 @@ const LINK = /(?<!!)\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g;
 const IMAGE = /!\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g;
 const SCHEME = /^[a-z][a-z0-9+.-]*:/i;
 
-export interface Section {
+interface Section {
   heading: string;
   body: string;
 }
 
 /** Split a document into its level-two sections, ignoring fenced code. */
-export function splitSections(text: string): Section[] {
+function splitSections(text: string): Section[] {
   const sections: Section[] = [];
   let current: Section | undefined;
   let fenced = false;
@@ -100,7 +72,7 @@ function stripFences(text: string): string {
  * The words of a section: prose, list text and table cells. A heading, fenced
  * code, link target, HTML comment and table rule do not count.
  */
-export function countWords(body: string): number {
+function countWords(body: string): number {
   let text = stripFences(body);
   text = text.replace(/<!--[\s\S]*?-->/g, " ");
   text = text.replace(/^#{1,6}\s+.*$/gm, " ");
@@ -112,37 +84,8 @@ export function countWords(body: string): number {
   return text.split(/\s+/).filter((word) => word.length > 0).length;
 }
 
-/** Lowercase words with punctuation removed, in source order. */
-function words(body: string): string[] {
-  const text = stripFences(body)
-    .replace(/<!--[\s\S]*?-->/g, " ")
-    .replace(/^#{1,6}\s+.*$/gm, " ")
-    .replace(IMAGE, "$1")
-    .replace(LINK, "$1");
-  return text
-    .toLowerCase()
-    .split(/\s+/)
-    .map((word) => word.replace(/[^\p{L}\p{N}]+/gu, ""))
-    .filter((word) => word.length > 0);
-}
-
-/** The first run of REPEAT words that both documents carry. */
-export function firstRepeat(a: string, b: string): string | undefined {
-  const left = words(a);
-  const right = new Set<string>();
-  const other = words(b);
-  for (let i = 0; i + REPEAT <= other.length; i += 1) {
-    right.add(other.slice(i, i + REPEAT).join(" "));
-  }
-  for (let i = 0; i + REPEAT <= left.length; i += 1) {
-    const phrase = left.slice(i, i + REPEAT).join(" ");
-    if (right.has(phrase)) return phrase;
-  }
-  return undefined;
-}
-
-/** The repositories keep the pair at the root or under `docs/`; root wins. */
-function findDoc(dir: string, name: DocName): string | undefined {
+/** The repositories keep the document at the root or under `docs/`; root wins. */
+function findDoc(dir: string, name: string): string | undefined {
   for (const candidate of [resolve(dir, name), resolve(dir, "docs", name)]) {
     if (existsSync(candidate) && statSync(candidate).isFile()) return candidate;
   }
@@ -150,54 +93,34 @@ function findDoc(dir: string, name: DocName): string | undefined {
 }
 
 /** Check one directory. Returns the findings, each ready to print. */
-export function validate(
+function validate(
   dir: string,
   options: { require?: boolean } = {},
 ): {
   errors: string[];
-  checked: DocName[];
+  checked: string[];
 } {
   const errors: string[] = [];
-  const checked: DocName[] = [];
-  const bodies = new Map<DocName, string>();
-
+  const checked: string[] = [];
   for (const name of DOCS) {
     const path = findDoc(dir, name);
     if (path === undefined) continue;
     checked.push(name);
-    const text = readFileSync(path, "utf8");
-    bodies.set(name, text);
-    errors.push(...checkFile(name, path, text));
+    errors.push(...checkFile(name, path, readFileSync(path, "utf8")));
   }
-
   if (options.require) {
     for (const name of DOCS) {
       if (!checked.includes(name)) errors.push(`${name}: not found`);
     }
   }
-
-  if (bodies.size === 2) {
-    const repeat = firstRepeat(
-      bodies.get("PRODUCT.md") ?? "",
-      bodies.get("SYSTEMS.md") ?? "",
-    );
-    if (repeat) {
-      errors.push(
-        `PRODUCT.md and SYSTEMS.md: twelve words repeat: "${repeat}"`,
-      );
-    }
-  }
-
   return { errors, checked };
 }
 
-function checkFile(name: DocName, path: string, text: string): string[] {
+function checkFile(name: string, path: string, text: string): string[] {
   const errors: string[] = [];
-  const expected = HEADINGS[name];
-  const caps = CAPS[name];
+  const expected = HEADINGS[name] ?? [];
   const sections = splitSections(text);
   const names = sections.map((section) => section.heading);
-
   for (const heading of expected) {
     if (!names.includes(heading)) {
       errors.push(`${name}: missing heading ## ${heading}`);
@@ -220,18 +143,17 @@ function checkFile(name: DocName, path: string, text: string): string[] {
   if (present.join("\u0000") !== wanted.join("\u0000")) {
     errors.push(`${name}: headings are out of order`);
   }
-
+  let total = 0;
   for (const section of sections) {
-    const cap = (caps.sections as Record<string, number>)[section.heading];
-    if (cap === undefined) continue;
     const count = countWords(section.body);
+    total += count;
     if (count === 0) {
       errors.push(`${name} § ${section.heading}: no text`);
-    } else if (count > cap) {
-      errors.push(`${name} § ${section.heading}: ${count} words, cap ${cap}`);
     }
   }
-
+  if (total > CAP) {
+    errors.push(`${name}: ${total} words, cap ${CAP}`);
+  }
   for (const match of text.matchAll(LINK)) {
     const target = match[2] ?? "";
     if (target.length === 0 || SCHEME.test(target) || target.startsWith("#")) {
@@ -244,7 +166,6 @@ function checkFile(name: DocName, path: string, text: string): string[] {
       errors.push(`${name}: ${target} does not resolve`);
     }
   }
-
   return errors;
 }
 

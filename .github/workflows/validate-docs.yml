@@ -27,6 +27,6 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.4.4
-      - name: Validate PRODUCT.md and SYSTEMS.md
+      - name: Validate docs/SPEC8N.md
         working-directory: standard
         run: bun run scripts/validate-docs.ts ../repo --require

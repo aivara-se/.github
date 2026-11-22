@@ -24,5 +24,5 @@ jobs:
         run: bun fmt --no-script --check .
       - name: Type check
         run: bun x tsc --noEmit
-      - name: Test
-        run: bun test
+      - name: Validate docs/SPEC8N.md
+        run: bun run validate-docs --require .
